@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby 
+#!/usr/bin/ruby
 # encoding: utf-8
 
 $: << File.join(File.dirname(__FILE__), './osx-plist/lib') 
@@ -7,6 +7,7 @@ require 'socket'
 require 'openssl'
 require 'pp'
 require 'stringio'
+require 'plist'
 require 'osx/plist'
 
 #socat -v tcp-l:27015,reuseaddr,fork unix:/var/run/usbmuxd &

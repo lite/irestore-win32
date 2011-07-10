@@ -1,0 +1,31 @@
+Setup
+====
+
++ cygwin
+
+    http://www.cygwin.com/
+
++ apt-cyg
+
+    http://code.google.com/p/apt-cyg/
+
++ ruby
+
+    apt-cyg install ruby
+
++ rubygems
+
+    http://rubygems.org/pages/download
+    ruby setup.rb install
+
++ RUBYOPT
+
+    export RUBYOPT=rubygems
+
++ bundler
+  
+    gem install bundler
+
++ plist
+
+	bundle 

@@ -1,0 +1,12 @@
+GEM
+  remote: http://gemcutter.org/
+  specs:
+    bit-struct (0.13.6)
+    plist (3.1.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bit-struct
+  plist
