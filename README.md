@@ -1,3 +1,9 @@
+VBox on osx/linux
+====
+
+run "sh run_vbox.sh" 
+after 30 seconds, use vrdp connect to 127.0.0.1:3389
+
 Setup
 ====
 
@@ -29,3 +35,4 @@ Setup
 + plist
 
 	bundle 
+	

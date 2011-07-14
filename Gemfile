@@ -6,5 +6,8 @@
 source "http://gemcutter.org"
 #source "http://gems.github.com"
 
+gem 'cheat'
 gem 'bit-struct'
 gem 'plist'
+gem 'plist4r'
+gem 'nokogiri-plist'
