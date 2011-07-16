@@ -1,15 +1,15 @@
 #!/usr/bin/env ruby 
 # encoding: utf-8
 
-$: << File.join(File.dirname(__FILE__), '.') 
-$: << File.join(File.dirname(__FILE__), './osx-plist/lib') 
+$: << File.dirname(__FILE__)
 
+require 'rubygems'
 require 'optparse'
 require 'net/http'
 require 'rexml/document'
 require 'pp'   
 require 'iservice'
-require 'osx/plist'
+require 'plist_ext'
 
 options = {}
 
@@ -76,8 +76,8 @@ class DeviceActivateRelay <  DeviceRelay
       #               <key>DeviceCertificate</key><data>
       xmldoc = REXML::Document.new(result.body)
       buffer = REXML::XPath.first(xmldoc, "//plist").to_s
-      # obj = Plist::parse_xml(StringIO.new(buffer))
- 			obj = OSX::PropertyList.load(StringIO.new(buffer), :xml1)[0] 
+      obj = PropertyList.load(buffer) 
+ 			
       # "iphone-activation"=>{"show-settings"=>true, "ack-received"=>true} 
 			tmp = obj["iphone-activation"]
 			if tmp.include?("activation-record")

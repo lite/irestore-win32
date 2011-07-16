@@ -1,3 +1,9 @@
+#!/usr/bin/env ruby 
+# encoding: utf-8
+
+$: << File.dirname(__FILE__)
+
+require 'rubygems'
 require 'bit-struct'
 require 'pp' 
 

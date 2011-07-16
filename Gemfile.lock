@@ -16,4 +16,3 @@ DEPENDENCIES
   CFPropertyList
   bit-struct
   cheat
-  libxml-ruby

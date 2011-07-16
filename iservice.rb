@@ -1,14 +1,13 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby 
 # encoding: utf-8
 
-$: << File.join(File.dirname(__FILE__), './osx-plist/lib') 
+$: << File.dirname(__FILE__)
 
+require 'rubygems'
 require 'socket'
 require 'openssl'
 require 'pp'
 require 'stringio'
-require 'plist'
-require 'osx/plist'
 
 #socat -v tcp-l:27015,reuseaddr,fork unix:/var/run/usbmuxd &
 $path = "/var/run/usbmuxd"
@@ -22,7 +21,8 @@ module DeviceSocket
     socket =  TCPSocket.new("127.0.0.1", 27015)
 
     obj = {"MessageType" => "Listen"}
-    data = obj.to_plist
+    data = PropertyList.dump(obj, :xml1) 
+    
     send_packet(socket, 8, data)
     # send_packet(@socket, 3, "")
     recv_packet(socket)
@@ -35,9 +35,9 @@ module DeviceSocket
     # </dict>
     p "Please unplug your device, then plug it back in"
 
-    data = recv_packet(socket)[2]    
-    # result = Plist::parse_xml(data) 
-		result = OSX::PropertyList.load(StringIO.new(data), :xml1)[0]
+    data = recv_packet(socket)[2]     
+		result = PropertyList.load(data)
+		
 		# $device_id = result['DeviceID'].to_i  
 		pp result
     $device_id = result['DeviceID']
@@ -66,13 +66,13 @@ module DeviceSocket
       # obj = {"BundleID"=>PLIST_BUNDLE_ID , "ClientVersionString"=>PLIST_CLIENT_VERSION_STRING, "ProgName"=> PLIST_PROGNAME,
       #   "MessageType" => "Connect",  "DeviceID" => @device_id, "PortNumber" => port }
       obj = {"MessageType" => "Connect",  "DeviceID" => $device_id, "PortNumber" => port }
-      data = obj.to_plist
+      data = PropertyList.dump(obj, :xml1) 
+      
       send_packet(socket, 8, data)
       # send_packet(@socket, 2, [@device_id, port, 0].pack("Vnn"))
       data = recv_packet(socket)[2]
       # <dict></dict><key>MessageType</key><string>Result</string><key>Number</key><integer>0</integer>/dict>
-      # result = Plist::parse_xml(data)
-			result = OSX::PropertyList.load(StringIO.new(data), :xml1)[0]  
+      result = PropertyList.load(data) 
 
       done = result['Number'] == 0
       $tag += 1
@@ -86,11 +86,11 @@ module DeviceSocket
   def write_plist(socket, data, fmt=:xml1)
     if data.kind_of?(Hash) || data.kind_of?(Array)
 			if fmt == :xml1
-	      data = data.to_plist(fmt)  
+	      data = PropertyList.dump(data, fmt)   
 	    	p "==write_plist==#{data}"
 	 		else
 				pp "==write_plist==", data
-	      data = data.to_plist(fmt)  
+	      data = PropertyList.dump(data, fmt)   
 			end
     end
     socket.write([data.length].pack("N") + data)
@@ -101,7 +101,8 @@ module DeviceSocket
     if buffer 
       size = buffer.unpack("N")[0]
       buffer = socket.read(size)
-      data = OSX::PropertyList.load(StringIO.new(buffer), fmt)[0]
+      data = PropertyList.load(buffer)
+      
 			if fmt == :xml1
 	    	p "==read_plist==#{buffer}"
 	 		else

@@ -1,12 +1,13 @@
 #!/usr/bin/env ruby 
 # encoding: utf-8
 
-$: << File.join(File.dirname(__FILE__), './ribusb/lib')    
+$: << File.dirname(__FILE__)
 
-require 'ribusb' 
-require 'ribusb/compat'
+require 'rubygems'
+# require 'ribusb' 
+# require 'ribusb/compat'
 require 'socket'
-require 'plist'
+# require 'plist'
 
 class AppleDevice
   @@matches = {}

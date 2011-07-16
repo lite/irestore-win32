@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby 
 # encoding: utf-8
 
-$: << File.join(File.dirname(__FILE__), '.')
-                                            
+$: << File.dirname(__FILE__)
+
+require 'rubygems'                                            
 require 'pp'                                
 require 'iservice'
 

@@ -6,22 +6,22 @@ $: << File.join(File.dirname(__FILE__), '.')
 require 'rubygems'
 require 'pp'
 require 'base64'
-require 'plist-cyg'
 require 'net/https'
 require 'uri'
 require 'img3file'
 require 'fileutils' 
 require 'pathname'
+require 'plist_ext'
 
-base_path = "/Users/dli/ipad/jailbreak"
+base_path = "/Users/dli/tools/iOS"
 ipsw_fn = File.join(base_path, "iPhone2,1_4.3.3_8J2_Restore.ipsw")
 
-dmg_path = "/Users/dli/ipad/jailbreak/ipsw/dmg"
+dmg_path = File.join(base_path, "ipsw/dmg")
 manifest_fn = File.join(dmg_path, "BuildManifest.plist")
 
 ### unzip
-system("mkdir -p #{dmg_path}")
-system("unzip -d #{dmg_path} #{ipsw_fn}")  
+#system("mkdir -p #{dmg_path}")
+#system("unzip -d #{dmg_path} #{ipsw_fn}")  
 
 ### gc-apple-dump_02
 # checkUnbrickHealth 
@@ -56,7 +56,9 @@ end
 # tssrqst_fn = "./amai/debug/tss-request.plist"
 # payload = File.open(tssrqst_fn).read
 buffer = File.open(manifest_fn).read
-obj = OSX::PropertyList.load(StringIO.new(buffer), :xml1)[0] 
+obj = PropertyList.load(buffer)
+# pp obj["BuildIdentities"][0]
+
 # pp obj
 rqst_obj = {
 	"@APTicket" => true, "@BBTicket" => true,  "@HostIpAddress" =>  "172.16.191.1",
@@ -101,7 +103,7 @@ end
 # pp manifest_info   
 
 # pp rqst_obj
-payload = rqst_obj.to_plist(:xml1)      
+payload = PropertyList.dump(rqst_obj, :xml1)    
 
 # http post 
 uri_gs_serv = "http://gs.apple.com/TSS/controller?action=2"
@@ -119,7 +121,7 @@ response = http.request(request)
 buffer = response.body.split("&REQUEST_STRING=")[1]
 # tssresp_fn = "./amai/debug/tss-response.plist"
 # buffer = File.open(tssresp_fn).read
-obj = OSX::PropertyList.load(StringIO.new(buffer), :xml1)[0] 
+obj = PropertyList.load(buffer)
 # pp obj 
 
 ### patch img3
