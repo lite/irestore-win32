@@ -2,12 +2,11 @@
 # encoding: utf-8
 
 $: << File.join(File.dirname(__FILE__), '.')
-$: << File.join(File.dirname(__FILE__), './osx-plist/lib')
                   
 require 'rubygems'
 require 'pp'
 require 'base64'
-require 'osx/plist'
+require 'plist-cyg'
 require 'net/https'
 require 'uri'
 require 'img3file'
@@ -21,8 +20,8 @@ dmg_path = "/Users/dli/ipad/jailbreak/ipsw/dmg"
 manifest_fn = File.join(dmg_path, "BuildManifest.plist")
 
 ### unzip
-# system("mkdir -p #{dmg_path}")
-# system("unzip -d #{dmg_path} #{ipsw_fn}")  
+system("mkdir -p #{dmg_path}")
+system("unzip -d #{dmg_path} #{ipsw_fn}")  
 
 ### gc-apple-dump_02
 # checkUnbrickHealth 

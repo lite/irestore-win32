@@ -9,6 +9,7 @@ source "http://gemcutter.org"
 gem 'cheat'
 gem 'bit-struct'
 #gem 'plist'
+#gem 'plist4r'
 #gem 'nokogiri-plist'
 gem 'libxml-ruby'
 gem 'CFPropertyList'

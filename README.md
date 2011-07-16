@@ -1,8 +1,19 @@
 VBox on osx/linux
 ====
 
-run "sh run_vbox.sh" 
-after 30 seconds, use vrdp connect to 127.0.0.1:3389
+start vbox
+
+	run "sh run_vbox.sh" 
+	after 30 seconds, use vrdp connect to 127.0.0.1:3389
+
+Prepare
+====
+
+download the ipsw from internet
+
+	http://www.littleyu.com/article/soft_apple.html
+	http://appldnld.apple.com/iPhone4/041-1009.20110503.M73Yr/iPhone2,1_4.3.3_8J2_Restore.ipsw
+
 
 Setup
 ====
@@ -11,32 +22,31 @@ cygwin
 
     http://www.cygwin.com/
 
-apt-cyg
+packages
 
-    http://code.google.com/p/apt-cyg/
+	make automake cmake gcc gdb patch
+	unzip curl ruby git wget subversion cvs coreutils binutils openssh
+	libxml2-devel openssl-devel zlib-devel ncurses bison 
 
-ruby
+SSL certs
 
-    apt-cyg install ruby
-
+	mkdir -p /usr/ssl/certs
+	cd /usr/ssl/certs
+	curl http://curl.haxx.se/ca/cacert.pem | awk 'split_after==1{n++;split_after=0} /-----END CERTIFICATE-----/ {split_after=1} {print > "cert" n ".pem"}'
+	c_rehash
+	
 rubygems
 
     http://rubygems.org/pages/download
     ruby setup.rb install
 
-RUBYOPT
-
-    export RUBYOPT=rubygems
-
-install rvm
+install rvm and gems
 
 	bash < <(curl -k https://rvm.beginrescueend.com/install/rvm)
-
-bundler
-  
+	source ~/.bashrc
+	rvm install 1.9.2
+	gem install rake
     gem install bundler
-
-libxml-ruby
-
-	bundle 
-	
+	gem install libxml-ruby
+	gem install bit-struct
+	gem install CFPropertyList
