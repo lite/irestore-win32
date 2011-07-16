@@ -7,32 +7,36 @@ after 30 seconds, use vrdp connect to 127.0.0.1:3389
 Setup
 ====
 
-+ cygwin
+cygwin
 
     http://www.cygwin.com/
 
-+ apt-cyg
+apt-cyg
 
     http://code.google.com/p/apt-cyg/
 
-+ ruby
+ruby
 
     apt-cyg install ruby
 
-+ rubygems
+rubygems
 
     http://rubygems.org/pages/download
     ruby setup.rb install
 
-+ RUBYOPT
+RUBYOPT
 
     export RUBYOPT=rubygems
 
-+ bundler
+install rvm
+
+	bash < <(curl -k https://rvm.beginrescueend.com/install/rvm)
+
+bundler
   
     gem install bundler
 
-+ plist
+libxml-ruby
 
 	bundle 
 	
