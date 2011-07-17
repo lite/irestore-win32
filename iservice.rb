@@ -9,15 +9,42 @@ require 'openssl'
 require 'pp'
 require 'stringio'
 
-#socat -v tcp-l:27015,reuseaddr,fork unix:/var/run/usbmuxd &
-$path = "/var/run/usbmuxd"
-$tag = 0
-$version = 1  
+PORT_ASR = 0x3930
+PORT_RESTORE = 0x7ef2
 
+#   com.apple.mobile.lockdown
+#   com.apple.mobile.iTunes
+#   com.apple.mobile.battery
+#   com.apple.springboard.curvedBatteryCapacity
+#   com.apple.mobile.internal
+#   com.apple.mobile.debug
+#   com.apple.mobile.restriction
+#   com.apple.mobile.sync_data_class
+#   com.apple.mobile.data_sync
+#   com.apple.mobile.nikita
+#   com.apple.fairplay
+#   com.apple.international
+#   com.apple.disk_usage
+#   and after xcode has done stuff: com.apple.xcode.developerdomain
+
+AMSVC_AFC                = "com.apple.afc"
+AMSVC_BACKUP             = "com.apple.mobilebackup"
+AMSVC_CRASH_REPORT_COPY  = "com.apple.crashreportcopy"
+AMSVC_DEBUG_IMAGE_MOUNT  = "com.apple.mobile.debug_image_mount"
+AMSVC_NOTIFICATION_PROXY = "com.apple.mobile.notification_proxy"
+AMSVC_INSTALLATION_PROXY = "com.apple.mobile.installation_proxy"
+AMSVC_PURPLE_TEST        = "com.apple.purpletestr"
+AMSVC_SOFTWARE_UPDATE    = "com.apple.mobile.software_update"
+AMSVC_SYNC               = "com.apple.mobilesync"
+AMSVC_SCREENSHOT         = "com.apple.screenshotr"
+AMSVC_SYSLOG_RELAY       = "com.apple.syslog_relay"
+AMSVC_SYSTEM_PROFILER    = "com.apple.mobile.system_profiler"
+
+#socat -v tcp-l:27015,reuseaddr,fork unix:/var/run/usbmuxd &
 module DeviceSocket
   
   def setup
-    # @socket =  UNIXSocket.new($path)
+    # @socket =  UNIXSocket.new("/var/run/usbmuxd")
     socket =  TCPSocket.new("127.0.0.1", 27015)
 
     obj = {"MessageType" => "Listen"}
@@ -38,26 +65,25 @@ module DeviceSocket
     data = recv_packet(socket)[2]     
 		result = PropertyList.load(data)
 		
-		# $device_id = result['DeviceID'].to_i  
+		# @device_id = result['DeviceID'].to_i  
 		pp result
-    $device_id = result['DeviceID']
+    @device_id = result['DeviceID']
 		product_id = result['Properties']['ProductID']
     serial_no = result['Properties']['SerialNumber']
 
-    p $device_id, product_id, serial_no 
+    p @device_id, product_id, serial_no 
 
-    puts "Device ID: 0x#{$device_id.to_s(16)}"
+    puts "Device ID: 0x#{@device_id.to_s(16)}"
     socket
   end
   
   def open_usbmuxd(port)
     done = false
-    $tag = 0
+    @tag = 0
     until done do
       puts "Retrying connection to port #{port}..."
 
-      # @socket = UNIXSocket.new($path)
-      # @socket =  TCPSocket.new("127.0.0.1", 27015)
+      # socket = UNIXSocket.new($path)
       socket = TCPSocket.new("127.0.0.1", 27015)
 
       # <dict><key>DeviceID</key><integer>5</integer>
@@ -65,7 +91,7 @@ module DeviceSocket
       # <key>PortNumber</key><integer>32498</integer></dict>
       # obj = {"BundleID"=>PLIST_BUNDLE_ID , "ClientVersionString"=>PLIST_CLIENT_VERSION_STRING, "ProgName"=> PLIST_PROGNAME,
       #   "MessageType" => "Connect",  "DeviceID" => @device_id, "PortNumber" => port }
-      obj = {"MessageType" => "Connect",  "DeviceID" => $device_id, "PortNumber" => port }
+      obj = {"MessageType" => "Connect",  "DeviceID" => @device_id, "PortNumber" => port }
       data = PropertyList.dump(obj, :xml1) 
       
       send_packet(socket, 8, data)
@@ -75,7 +101,7 @@ module DeviceSocket
       result = PropertyList.load(data) 
 
       done = result['Number'] == 0
-      $tag += 1
+      @tag += 1
       sleep(1)
     end
     puts "Connected to port #{port}"
@@ -113,7 +139,7 @@ module DeviceSocket
   end
     
   def send_packet(socket, packet_type, data)
-    packet = [data.length + 16, $version, packet_type, $tag].pack("V4") + data
+    packet = [data.length + 16, 1, packet_type, @tag].pack("V4") + data 
     p "==send_packet==#{packet}" 
     socket.write(packet)
   end
@@ -338,37 +364,6 @@ class DeviceRelay
   end
   
 end
-
-
-PORT_RESTORE = 0x7ef2
-
-#   com.apple.mobile.lockdown
-#   com.apple.mobile.iTunes
-#   com.apple.mobile.battery
-#   com.apple.springboard.curvedBatteryCapacity
-#   com.apple.mobile.internal
-#   com.apple.mobile.debug
-#   com.apple.mobile.restriction
-#   com.apple.mobile.sync_data_class
-#   com.apple.mobile.data_sync
-#   com.apple.mobile.nikita
-#   com.apple.fairplay
-#   com.apple.international
-#   com.apple.disk_usage
-#   and after xcode has done stuff: com.apple.xcode.developerdomain
-
-AMSVC_AFC                = "com.apple.afc"
-AMSVC_BACKUP             = "com.apple.mobilebackup"
-AMSVC_CRASH_REPORT_COPY  = "com.apple.crashreportcopy"
-AMSVC_DEBUG_IMAGE_MOUNT  = "com.apple.mobile.debug_image_mount"
-AMSVC_NOTIFICATION_PROXY = "com.apple.mobile.notification_proxy"
-AMSVC_INSTALLATION_PROXY = "com.apple.mobile.installation_proxy"
-AMSVC_PURPLE_TEST        = "com.apple.purpletestr"
-AMSVC_SOFTWARE_UPDATE    = "com.apple.mobile.software_update"
-AMSVC_SYNC               = "com.apple.mobilesync"
-AMSVC_SCREENSHOT         = "com.apple.screenshotr"
-AMSVC_SYSLOG_RELAY       = "com.apple.syslog_relay"
-AMSVC_SYSTEM_PROFILER    = "com.apple.mobile.system_profiler"
 
 class DeviceService
   

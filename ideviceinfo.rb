@@ -7,7 +7,7 @@ require 'rubygems'
 require 'pp'                                
 require 'iservice'
 
-if __FILE__ == $0
+def getdeviceinfo
   l = DeviceRelay.new
   
   l.query_type
@@ -32,4 +32,6 @@ if __FILE__ == $0
   l.stop_session(@session_id)
 end
 
-__END__
+if __FILE__ == $0
+  getdeviceinfo
+end

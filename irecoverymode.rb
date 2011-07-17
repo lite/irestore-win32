@@ -21,8 +21,6 @@ class IDevice < DeviceSocket
 end
 
 if __FILE__ == $0
-  PORT_RESTORE = 0x7ef2
-  # PORT_RESTORE = 0xf27e
   d = IDevice.new(PORT_RESTORE)
   
   d.enter_recovery
