@@ -11,22 +11,6 @@ require 'pp'
 require 'iservice'
 require 'plist_ext'
 
-options = {}
-
-optparse = OptionParser.new do |opts|
-  opts.banner = "Usage: #{__FILE__} [options]"
-  
-  opts.on("-a", "--activate", "activate the target device") do |a|
-    options[:activate] = a
-  end
-  opts.on("-h", "--help", "show usage") do |h|
-    puts opts
-    exit
-  end
-end.parse!
-
-p options
-
 class DeviceActivateRelay <  DeviceRelay
   def activate
     dev = get_value("DeviceClass")
@@ -55,7 +39,8 @@ class DeviceActivateRelay <  DeviceRelay
         "IMSI" => imsi,
         "InStoreActivation" => "false",
         "machineName" => "macos",
-        "activation-info" => activation_info.to_plist,
+        # "activation-info" => activation_info.to_plist,
+        "activation-info" => PropertyList.dump(activation_info, :xml1),
         "ICCID" => iccid,
         "IMEI" => imei
       }
@@ -100,8 +85,7 @@ class DeviceActivateRelay <  DeviceRelay
   end
 end
 
-
-if __FILE__ == $0
+def do_activate(is_activate)
   l = DeviceActivateRelay.new
   
   l.query_type
@@ -119,14 +103,14 @@ if __FILE__ == $0
   
   # ssl_enable
   l.ssl_enable(true)
-  if options[:activate]
-    l.activate
-  else
-    l.deactivate
-  end
+  is_activate ? l.activate : l.deactivate
   l.ssl_enable(false)
   # 
-  l.stop_session(@session_id)
+  l.stop_session(@session_id) 
+end
+
+if __FILE__ == $0
+  do_activate(false)
 end
 
 

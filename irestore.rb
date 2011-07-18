@@ -7,24 +7,20 @@ require 'rubygems'
 require 'iservice'
 require 'ipsw_ext'
 
-class RestoreService < PropertyListService
-  handle "com.apple.mobile.restored"
-  
-  def reboot
-    request("Reboot")
-  end
-  
+class RestoreService < DeviceService
+
   def start_restore(progress_callback = nil, &data_request_handler)
-    # write_plist("Request" => "StartRestore", "RestoreProtocolVersion" => 11)
-    write_plist("Request" => "StartRestore", "RestoreProtocolVersion" => 12)
+    obj = {"Request" => "StartRestore", "RestoreProtocolVersion" => 12}
+    write_plist(@socket, obj)
+    
     p "wrote plist"
-    while plist = read_plist do
-      p "got plist"
-      p plist
+    loop do
+      plist = read_plist(@socket)
+      p "got plist", plist
       
       if plist["MsgType"] =="DataRequestMsg"
         response = data_request_handler.call(plist["DataType"])
-        write_plist(response) if response
+        write_plist(@socket, response) if response
       elsif progress_callback && plist["MsgType"] == "ProgressMsg" 
         progress_callback.call(plist["Operation"], plist["Progress"])
       elsif plist["MsgType"] == "StatusMsg"
@@ -34,32 +30,14 @@ class RestoreService < PropertyListService
       end
     end
   end
-  
-  def goodbye
-    request("Goodbye")
-  end
-  
-  # Valid keys (key cannot be empty):
-  #   SerialNumber
-  #   IMEI
-  #   HardwareModel
-  def query_value(key)
-    request("QueryValue", "QueryKey" => key)
-  end
-  
-  def query_type
-    request("QueryType")
-  end
-  
-  def request(command, hash = {})
-    request_plist({"Request" => command}.merge(hash))
-  end
+
 end
 
-class ASRService < Service
-  def initialize(port, input)
-    @socket = USBTCPSocket.new(port)
-    
+class ASRService < DeviceService
+
+  def start(input)
+
+    p "start ASR."
     if input.kind_of?(File)
       @io = input
       @size = input.stat.size
@@ -68,11 +46,8 @@ class ASRService < Service
       @size = input.size
     end
     
-    raise "Unexpected command" unless read_plist["Command"] == "Initiate"
-  end
-  
-  def start
-    write_plist({
+
+    obj ={
       "FEC Slice Stride" => 40,
       "Packet Payload Size" => 1450,
       "Packets Per FEC" => 25,
@@ -82,7 +57,9 @@ class ASRService < Service
       },
       "Stream ID" => 1,
       "Version" => 1
-    })
+    }
+    
+    write_plist(obj)
     
     while plist = read_plist do
       if plist["Command"] == "OOBData"
@@ -99,12 +76,12 @@ class ASRService < Service
         
         index = 0
         
-        while buffer = @io.read(0x10000) do
+        while buffer = @io.read(0x1000000) do
           @socket.write(buffer)
           index += 1
           
           if index % 16 == 0
-            puts "#{index.to_f / (@size / 0x10000) * 100}% done"
+            puts "#{index.to_f / (@size / 0x1000000) * 100}% done"
           end
         end
         break
@@ -130,6 +107,7 @@ class ASRService < Service
     payload = PropertyList.dump(obj, :xml1)  
     @socket.write(payload)
   end
+  
 end
 
 #define WAIT_FOR_STORAGE       11
@@ -151,8 +129,6 @@ end
 #define LOAD_NOR               36
 
 def do_restore
-  restore = devs[0].open
-
   progress_callback = proc do |operation, progress|
     steps = {
       11 => "Waiting for storage device",
@@ -177,6 +153,8 @@ def do_restore
     puts "#{steps[operation]} (#{operation}) with progress #{progress}"
   end
 
+  restore = RestoreService.new(PORT_RESTORE)
+
   p "starting restore"
   restore.start_restore(progress_callback) do |data_type|
     puts "DataRequest callback"
@@ -188,8 +166,8 @@ def do_restore
         puts "Started ASR thread" 
         File.open(FILE_RESTOREDMG) do |f|
           # asr = ASRService.new(12345, f)
-          asr = ASRService.new(PORT_ASR, f)
-          asr.start
+          asr = ASRService.new(PORT_ASR)
+          asr.start(f)
         end
       end
     
@@ -223,4 +201,3 @@ end
 if __FILE__ == $0
   do_restore
 end
-

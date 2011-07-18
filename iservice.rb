@@ -8,6 +8,7 @@ require 'socket'
 require 'openssl'
 require 'pp'
 require 'stringio'
+require 'plist_ext'
 
 PORT_ASR = 0x3930
 PORT_RESTORE = 0x7ef2
@@ -47,6 +48,7 @@ module DeviceSocket
     # @socket =  UNIXSocket.new("/var/run/usbmuxd")
     socket =  TCPSocket.new("127.0.0.1", 27015)
 
+    @tag = 0
     obj = {"MessageType" => "Listen"}
     data = PropertyList.dump(obj, :xml1) 
     
@@ -166,7 +168,7 @@ class DeviceRelay
     # @socket = UNIXSocket.new($path)
     # @socket =  TCPSocket.new("127.0.0.1", 27015)
     setup
-    @socket = open_usbmuxd(32498)
+    @socket = open_usbmuxd(PORT_RESTORE)
   end
   
   def ssl_enable(use_ssl)

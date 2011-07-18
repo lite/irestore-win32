@@ -5,6 +5,12 @@ $: << File.dirname(__FILE__)
                   
 require 'rubygems'
 
+if /darwin/ =~ RUBY_PLATFORM
+  PATH_IRECOVERY = File.join(File.dirname(__FILE__), "irecovery");
+else
+  PATH_IRECOVERY = File.join(File.dirname(__FILE__), "s-irecovery.exe");
+end
+
 PATH_BASE           = "/Users/dli/tools/iOS"
 FILE_IPSW           = File.join(PATH_BASE, "iPhone2,1_4.3.3_8J2_Restore.ipsw")
 
@@ -22,3 +28,4 @@ FILE_RAMDISK        = File.join(PATH_DMG_NEW, "038-1447-003.dmg")
 FILE_KERNELCACHE    = File.join(PATH_DMG_NEW, "kernelcache.release.n88")
 FILE_LLB            = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.n88ap.production/LLB.n88ap.RELEASE.img3")
 FILE_IMGDIR         = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.n88ap.production")
+

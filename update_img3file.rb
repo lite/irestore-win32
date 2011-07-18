@@ -42,10 +42,10 @@ def checkhealth
 	p response.body 
 end
 
-if __FILE__ == $0
+def update_img3file
   ### unzip
-  system("mkdir -p #{PATH_DMG}")
-  system("unzip -d #{PATH_DMG} #{FILE_IPSW}")  
+  # system("mkdir -p #{PATH_DMG}")
+  # system("unzip -d #{PATH_DMG} #{FILE_IPSW}")  
 
   ### tss request 
   # gc-apple-dump_03
@@ -128,11 +128,11 @@ if __FILE__ == $0
   		img3 = Img3File.new
   		data = File.open(filename,'r').read
   		img3.parse(StringIO.new(data)) 
-	
+
   		### change the img3 file
   		blob = obj[k]["Blob"]
   		img3.update_elements(StringIO.new(blob), blob.length)
-                                    
+                                  
   		tmp_filename = File.join(PATH_DMG_NEW, v) 
   		FileUtils.mkdir_p(Pathname.new(tmp_filename).dirname)    
   		f = File.open(tmp_filename, "wb")
@@ -140,5 +140,9 @@ if __FILE__ == $0
   		f.close        
   	end
   end
+end 
+
+if __FILE__ == $0
+  update_img3file
 end
 

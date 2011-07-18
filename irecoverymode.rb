@@ -7,24 +7,27 @@ require 'rubygems'
 require 'iservice'
 require 'plist_ext'
 
-class IDevice < DeviceSocket
+class InfoService < DeviceService
   
   def enter_recovery
     # obj = {"ProtocolVersion"=>"2", "Request" => "QueryType" }
     obj = {"Request" => "EnterRecovery" }
-    write_plist(obj)
-    p read_plist
-    
-    @socket.close 
+    write_plist(@socket, obj)
+    p read_plist(@socket)
+
+    p "sleeping"
+    sleep(10)
   end
   
 end
 
+def enter_recovery
+  d = InfoService.new(PORT_RESTORE)
+  d.enter_recovery 
+end
+
 if __FILE__ == $0
-  d = IDevice.new(PORT_RESTORE)
-  
-  d.enter_recovery
-  
+  enter_recovery
 end
 
 # 
