@@ -9,6 +9,7 @@ require 'openssl'
 require 'pp'
 require 'stringio'
 require 'plist_ext'
+require 'rexml/document'
 
 PORT_ASR = 0x3930
 PORT_RESTORE = 0x7ef2
@@ -129,6 +130,12 @@ module DeviceSocket
     if buffer 
       size = buffer.unpack("N")[0]
       buffer = socket.read(size)
+     
+      # TODO: a little patch for a plist include '\u0000'
+      buffer = buffer.gsub("\u0000", "")
+      # xmldoc = REXML::Document.new(buffer)
+      # p REXML::XPath.first(xmldoc, "//").to_s
+      
       data = PropertyList.load(buffer)
       
 			if fmt == :xml1
@@ -206,24 +213,24 @@ class DeviceRelay
     root_pem = @root_ca_cert.to_pem 
 		device_pem = @device_cert.to_pem
 		host_pem = @host_cert.to_pem 
-		pub_key.blob = true
-		root_pem.blob = true
-		device_pem.blob = true    
-		host_pem.blob = true
+    # pub_key.blob = true
+    # root_pem.blob = true
+    # device_pem.blob = true    
+    # host_pem.blob = true
     p "host_id:", @host_id
 
-		# certs = {"DeviceCertificate" => StringIO.new(device_pem), 
-		#   "DevicePublicKey" => StringIO.new(pub_key),
-		#   "HostCertificate" => StringIO.new(host_pem), 
-		#   "HostID" => @host_id,  
-		#   "RootCertificate" => StringIO.new(root_pem)
-		# } 
-	  certs = {"DeviceCertificate" => device_pem, 
-	  		  "DevicePublicKey" => pub_key,
-	  		  "HostCertificate" => host_pem, 
-	  		  "HostID" => @host_id,  
-	        "RootCertificate" => root_pem
-	        }   
+    certs = {"DeviceCertificate" => StringIO.new(device_pem), 
+      "DevicePublicKey" => StringIO.new(pub_key),
+      "HostCertificate" => StringIO.new(host_pem), 
+      "HostID" => @host_id,  
+      "RootCertificate" => StringIO.new(root_pem)
+    } 
+    # certs = {"DeviceCertificate" => device_pem, 
+    #       "DevicePublicKey" => pub_key,
+    #       "HostCertificate" => host_pem, 
+    #       "HostID" => @host_id,  
+    #       "RootCertificate" => root_pem
+    #       }   
 		obj = {"ProtocolVersion"=> "2", "PairRecord"=>certs, "Request" => "Pair" }
     write_plist(@socket, obj)
     read_plist(@socket)

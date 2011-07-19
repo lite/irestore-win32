@@ -4,6 +4,7 @@
 $: << File.dirname(__FILE__)
                   
 require 'rubygems'
+require 'ideviceinfo'
 require 'update_img3file'
 require 'irecoverymode'
 require 'iactivate'
@@ -19,9 +20,10 @@ if /darwin/ =~ RUBY_PLATFORM
 end
 
 if __FILE__ == $0
-  # enter_recovery
-  update_img3file
+  #getdeviceinfo
+  #enter_recovery
+  # update_img3file
   enter_restore
-  do_restore 
-  do_activate(true)
+  # do_restore 
+  # do_activate(true)
 end

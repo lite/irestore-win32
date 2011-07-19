@@ -22,7 +22,6 @@ def enter_restore
   p "sending iBEC"
   run_irecovery("-r")
   run_irecovery("-f #{FILE_IBEC}")
-
   run_irecovery("-c setenv auto-boot false")
   run_irecovery("-c saveenv")
   run_irecovery("-c go")
@@ -31,21 +30,24 @@ def enter_restore
   sleep(5)
   
   p "sending apple logo"
-  run_irecovery("-r")
+  # run_irecovery("-r")
   run_irecovery("-f #{FILE_APPLELOG}")
   run_irecovery("-c setpicture 0")
   # run_irecovery("-c bgcolor 0 0 0")
   run_irecovery("-c \"bgcolor 0 255 0\"")
+  sleep(1)
  
   p "sending ramdisk"
   run_irecovery("-r")
   run_irecovery("-f #{FILE_RAMDISK}")
   run_irecovery("-c ramdisk")
+  sleep(5)
    
   p "sending device tree"
   run_irecovery("-r")
   run_irecovery("-f #{FILE_DEVICETREE}")
   run_irecovery("-c devicetree")
+  sleep(1)
   
   p "sending kernel and booting"
   run_irecovery("-r")

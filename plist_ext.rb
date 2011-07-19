@@ -3,10 +3,15 @@
 
 require 'rubygems'
 require 'cfpropertylist'
+# require 'plist'
+# require 'Plist' # need ruby 1.9.2, not works on UTF8
+# require 'nokogiri-plist' # not works on cygwin
+# require 'plist4r'  # not works on cygwin
 require 'pp'
 
 module PropertyList
-
+  
+  ## cfpropertylist
   def self.load(str)
     plist = CFPropertyList::List.new(:data => str)
     CFPropertyList.native_types(plist.value)
@@ -17,7 +22,15 @@ module PropertyList
     plist.value = CFPropertyList.guess(obj)
     plist.to_str(fmt == :xml1 ? CFPropertyList::List::FORMAT_XML : CFPropertyList::List::FORMAT_BINARY)
   end
-   
+  
+  # ### plist
+  # def self.load(str)
+  #   Plist::parse_xml(str)
+  # end
+  # 
+  # def self.dump(obj, fmt = nil)
+  #   obj.to_plist
+  # end
 end
 
 def test_xml_to_plist

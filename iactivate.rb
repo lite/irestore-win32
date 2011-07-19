@@ -91,7 +91,7 @@ def do_activate(is_activate)
   l.query_type
   
   # pub_key = l.get_value("DevicePublicKey").read
-	pub_key = l.get_value("DevicePublicKey")
+  pub_key = l.get_value("DevicePublicKey")
   p "pub_key:", pub_key
   #
   l.pair_device(pub_key)

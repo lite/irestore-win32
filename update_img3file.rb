@@ -14,53 +14,27 @@ require 'pathname'
 require 'plist_ext'
 require 'ipsw_ext'
 
-### gc-apple-dump_02
-# checkUnbrickHealth 
-def checkhealth
-	obj = {
-		"ECID" 					=> 86872710412,
-		"ICCID" 				=> "89860109158380264868",
-		"IMEI"					=> "012037007915703",
-		"IMSI"					=> "460018445986486",
-		"SerialNumber" 	=> "889437758M8"
-		}
-	payload = obj.to_plist(:xml1)
-	
-	uri_albert_serv = "https://albert.apple.com/WebObjects/ALUnbrick.woa/wa/ALActivationMonitor/checkUnbrickHealth"
-	uri = URI.parse(uri_albert_serv)
-	http = Net::HTTP.new(uri.host, uri.port)
-	http.use_ssl = true
-	http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-	request = Net::HTTP::Post.new(uri.request_uri)
-	request["x-apple-store-front"] = "143465-2,12" 
-	request["x-apple-tz"] = "28800"
-	request["User-Agent"] = "InetURL/1.0" 
-	request["Content-Length"] = payload.length
-	request["Content-Type"] = "application/x-apple-plist"
-	request.body = payload                    
-	response = http.request(request)  
-	p response.body 
-end
-
 def update_img3file
   ### unzip
-  # system("mkdir -p #{PATH_DMG}")
-  # system("unzip -d #{PATH_DMG} #{FILE_IPSW}")  
+  system("mkdir -p #{PATH_DMG}")
+  system("unzip -d #{PATH_DMG} #{FILE_IPSW}")  
 
   ### tss request 
   # gc-apple-dump_03
   # tssrqst_fn = "./amai/debug/tss-request.plist"
   # payload = File.open(tssrqst_fn).read
   buffer = File.open(FILE_MANIFEST_PLIST).read
-  p buffer
+  # p buffer
   obj = PropertyList.load(buffer)
   # pp obj["BuildIdentities"][0]
 
   # pp obj
   rqst_obj = {
   	"@APTicket" => true, "@BBTicket" => true,  "@HostIpAddress" =>  "172.16.191.1",
-  	"@HostPlatformInfo" => "mac", "@UUID" => "6D27AA8B-FE93-442D-B957-46BCC347D5FC",  "@VersionInfo" =>  "libauthinstall-68.1",
-  	"ApECID" =>  86872710412, "ApProductionMode" => true
+  	"@HostPlatformInfo" => "mac", "@UUID" => "6D27AA8B-FE93-442D-B957-46BCC347D5FC",  
+  	"@VersionInfo" =>  "libauthinstall-68.1",
+  	"ApECID" =>  86872710412, 
+  	"ApProductionMode" => true
   }
 
   tmp = obj["BuildIdentities"][0] 
@@ -101,7 +75,7 @@ def update_img3file
 
   # pp rqst_obj
   payload = PropertyList.dump(rqst_obj, :xml1)
-  p payload 
+  # p payload 
 
   # http post 
   uri_gs_serv = "http://gs.apple.com/TSS/controller?action=2"
@@ -114,36 +88,43 @@ def update_img3file
   request["Content-Length"] = payload.length
   request["Content-Type"] = 'text/xml; charset="utf-8"'  
   request.body = payload                    
-  response = http.request(request)  
-  p response.body
-  # STATUS=0&MESSAGE=SUCCESS&REQUEST_STRING=
-  buffer = response.body.split("&REQUEST_STRING=")[1]
-  # tssresp_fn = "./amai/debug/tss-response.plist"
-  # buffer = File.open(tssresp_fn).read
-  obj = PropertyList.load(buffer)
+  response = http.request(request)
   
-  pp obj 
-  ### patch img3
-  manifest_info.each do |k, v|
-    p k
-    if obj.include?(k)
-	#pp k, v 
-	filename = File.join(PATH_DMG, v)    
-	img3 = Img3File.new
-	data = File.open(filename,'r').read
-	img3.parse(StringIO.new(data)) 
+  if response.body.include?("STATUS=0&MESSAGE=")
+    # STATUS=0&MESSAGE=SUCCESS&REQUEST_STRING=
+    buffer = response.body.split("&REQUEST_STRING=")[1]
+    # tssresp_fn = "./amai/debug/tss-response.plist"
+    # buffer = File.open(tssresp_fn).read
+    obj = PropertyList.load(buffer)
+  
+    if not obj.nil? 
+      ### patch img3
+      manifest_info.each do |k, v|
+        p k
+        if obj.include?(k)
+          #pp k, v 
+          filename = File.join(PATH_DMG, v)    
+          img3 = Img3File.new
+          data = File.open(filename,'r').read
+          img3.parse(StringIO.new(data)) 
 
-	### change the img3 file
-	blob = obj[k]["Blob"]
-	img3.update_elements(StringIO.new(blob), blob.length)
-			  
-	tmp_filename = File.join(PATH_DMG_NEW, v) 
-	FileUtils.mkdir_p(Pathname.new(tmp_filename).dirname)    
-	f = File.open(tmp_filename, "wb")
-	f.write(img3.to_s) 
-	f.close        
+          ### change the img3 file
+          blob = obj[k]["Blob"]
+          img3.update_elements(StringIO.new(blob), blob.length)
+		  
+          tmp_filename = File.join(PATH_DMG_NEW, v) 
+          FileUtils.mkdir_p(Pathname.new(tmp_filename).dirname)    
+          f = File.open(tmp_filename, "wb")
+          f.write(img3.to_s) 
+          f.close        
+        end
+      end
     end
-  end
+  else
+    # STATUS=94&MESSAGE=This device isn't eligible for the requested build.
+    p response.body
+  end  
+    
 end 
 
 if __FILE__ == $0

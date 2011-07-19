@@ -12,9 +12,8 @@ Prepare
 download the ipsw from internet
 
     http://www.littleyu.com/article/soft_apple.html
-    http://appldnld.apple.com/iPhone4/041-1009.20110503.M73Yr/iPhone2,1_4.3.3_8J2_Restore.ipsw
-
-
+    http://appldnld.apple.com/iPhone4/041-1921.20110715.ItuLh/iPhone2,1_4.3.4_8K2_Restore.ipsw
+    
 Setup
 ====
 
@@ -64,6 +63,15 @@ install rvm and gems
     gem install bit-struct
     gem install CFPropertyList
 	
+Run
+----
+
+put iphone ipsw under the path: ~/tools/iOS/ 
+  
+    chmod +x s-irecovery.exe
+    ruby main.rb
+    
+and run
 
 Ref
 ----
