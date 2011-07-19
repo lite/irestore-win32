@@ -11,19 +11,19 @@ require 'iactivate'
 
 p RUBY_PLATFORM
 
-if /darwin/ =~ RUBY_PLATFORM
-  # require 'osx_irestoremode'
+# if /darwin/ =~ RUBY_PLATFORM
+#   require 'osx_irestoremode'
 #   require 'osx_irestore'
 # else
   require 'irestoremode'
   require 'irestore'
-end
+# end
 
 if __FILE__ == $0
   #getdeviceinfo
   #enter_recovery
-  # update_img3file
-  enter_restore
-  # do_restore 
-  # do_activate(true)
+  #update_img3file
+  #enter_restore
+  do_restore 
+  do_activate(true)
 end

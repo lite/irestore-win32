@@ -8,8 +8,8 @@ require 'ipsw_ext'
 require 'Open3'
 
 def run_irecovery(args)
-  p args
   cmd = [PATH_IRECOVERY, args].join(" ")
+  p cmd
   Open3.popen3(cmd) { |i,o,e,t| puts o.read }
 end
  
@@ -34,7 +34,7 @@ def enter_restore
   run_irecovery("-f #{FILE_APPLELOG}")
   run_irecovery("-c setpicture 0")
   # run_irecovery("-c bgcolor 0 0 0")
-  run_irecovery("-c \"bgcolor 0 255 0\"")
+  run_irecovery("-c bgcolor 0 255 0")
   sleep(1)
  
   p "sending ramdisk"
@@ -52,7 +52,7 @@ def enter_restore
   p "sending kernel and booting"
   run_irecovery("-r")
   run_irecovery("-f #{FILE_KERNELCACHE}")
-  run_irecovery('-c setenv boot-args "rd=md0 nand-enable-reformat=1 -progress"')
+  run_irecovery('-c setenv boot-args rd=md0 nand-enable-reformat=1 -progress')
   run_irecovery("-c bootx")
   
   p "sleeping"
