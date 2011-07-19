@@ -19,7 +19,7 @@ if /darwin/ =~ RUBY_PLATFORM
 end
 
 if __FILE__ == $0
-  enter_recovery
+  # enter_recovery
   update_img3file
   enter_restore
   do_restore 

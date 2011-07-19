@@ -11,7 +11,9 @@ else
   PATH_IRECOVERY = File.join(File.dirname(__FILE__), "s-irecovery.exe");
 end
 
-PATH_BASE           = "/Users/dli/tools/iOS"
+PATH_BASE           = File.expand_path("~/tools/iOS")
+p PATH_BASE
+
 FILE_IPSW           = File.join(PATH_BASE, "iPhone2,1_4.3.3_8J2_Restore.ipsw")
 
 PATH_DMG            = File.join(PATH_BASE, "ipsw/dmg")

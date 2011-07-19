@@ -4,7 +4,7 @@
 $: << File.dirname(__FILE__)
                   
 require 'rubygems'
-require 'pp'
+require 'pp'	
 require 'base64'
 require 'net/https'
 require 'uri'
@@ -52,6 +52,7 @@ def update_img3file
   # tssrqst_fn = "./amai/debug/tss-request.plist"
   # payload = File.open(tssrqst_fn).read
   buffer = File.open(FILE_MANIFEST_PLIST).read
+  p buffer
   obj = PropertyList.load(buffer)
   # pp obj["BuildIdentities"][0]
 
@@ -96,10 +97,11 @@ def update_img3file
   	end
   end        
 
-  # pp manifest_info   
+  #pp manifest_info   
 
   # pp rqst_obj
-  payload = PropertyList.dump(rqst_obj, :xml1)    
+  payload = PropertyList.dump(rqst_obj, :xml1)
+  p payload 
 
   # http post 
   uri_gs_serv = "http://gs.apple.com/TSS/controller?action=2"
@@ -113,32 +115,34 @@ def update_img3file
   request["Content-Type"] = 'text/xml; charset="utf-8"'  
   request.body = payload                    
   response = http.request(request)  
+  p response.body
   # STATUS=0&MESSAGE=SUCCESS&REQUEST_STRING=
   buffer = response.body.split("&REQUEST_STRING=")[1]
   # tssresp_fn = "./amai/debug/tss-response.plist"
   # buffer = File.open(tssresp_fn).read
   obj = PropertyList.load(buffer)
-  # pp obj 
-
+  
+  pp obj 
   ### patch img3
   manifest_info.each do |k, v|
-  	if obj.include?(k)
-  		#pp k, v 
-  		filename = File.join(PATH_DMG, v)    
-  		img3 = Img3File.new
-  		data = File.open(filename,'r').read
-  		img3.parse(StringIO.new(data)) 
+    p k
+    if obj.include?(k)
+	#pp k, v 
+	filename = File.join(PATH_DMG, v)    
+	img3 = Img3File.new
+	data = File.open(filename,'r').read
+	img3.parse(StringIO.new(data)) 
 
-  		### change the img3 file
-  		blob = obj[k]["Blob"]
-  		img3.update_elements(StringIO.new(blob), blob.length)
-                                  
-  		tmp_filename = File.join(PATH_DMG_NEW, v) 
-  		FileUtils.mkdir_p(Pathname.new(tmp_filename).dirname)    
-  		f = File.open(tmp_filename, "wb")
-  		f.write(img3.to_s) 
-  		f.close        
-  	end
+	### change the img3 file
+	blob = obj[k]["Blob"]
+	img3.update_elements(StringIO.new(blob), blob.length)
+			  
+	tmp_filename = File.join(PATH_DMG_NEW, v) 
+	FileUtils.mkdir_p(Pathname.new(tmp_filename).dirname)    
+	f = File.open(tmp_filename, "wb")
+	f.write(img3.to_s) 
+	f.close        
+    end
   end
 end 
 
