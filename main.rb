@@ -8,22 +8,21 @@ require 'ideviceinfo'
 require 'update_img3file'
 require 'irecoverymode'
 require 'iactivate'
+require 'irestore'
 
 p RUBY_PLATFORM
 
-# if /darwin/ =~ RUBY_PLATFORM
-#   require 'osx_irestoremode'
-#   require 'osx_irestore'
-# else
-  require 'irestoremode'
-  require 'irestore'
-# end
+if /darwin/ =~ RUBY_PLATFORM
+  require 'osx_irestoremode'
+else
+  require 'cyg_irestoremode'
+end
 
 if __FILE__ == $0
-  #getdeviceinfo
-  #enter_recovery
-  #update_img3file
-  #enter_restore
+  getdeviceinfo
+  enter_recovery
+  update_img3file
+  enter_restore
   do_restore 
   do_activate(true)
 end

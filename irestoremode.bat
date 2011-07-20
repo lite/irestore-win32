@@ -6,6 +6,8 @@ s-irecovery.exe -c "saveenv"
 s-irecovery.exe -r
 echo "send IBEC"
 s-irecovery.exe -f "C:\cygwin\home\dli\tools\iOS\ipsw\dmg_new\Firmware\dfu\iBEC.n88ap.RELEASE.dfu"
+#s-irecovery.exe -f "`cygpath -w /home/dli/tools/iOS/ipsw/dmg_new/Firmware/dfu/iBEC.n88ap.RELEASE.dfu`" # s-irecovery.exe not works on unix path 
+#s-irecovery.exe -f "../tools/iOS/ipsw/dmg_new/Firmware/dfu/iBEC.n88ap.RELEASE.dfu" # s-irecovery.exe not works 
 s-irecovery.exe -c "setenv auto-boot false"
 
 s-irecovery.exe -c "saveenv"
