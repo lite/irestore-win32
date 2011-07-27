@@ -23,6 +23,8 @@ osx
 install libusb
 
     brew install libusb
+    brew install socat
+    socat -x -v tcp-l:27015,reuseaddr,fork unix:/var/run/usbmuxd &
 
 cygwin
 ----

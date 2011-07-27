@@ -33,7 +33,7 @@ def update_img3file
   	"@APTicket" => true, "@BBTicket" => true,  "@HostIpAddress" =>  "172.16.191.1",
   	"@HostPlatformInfo" => "mac", "@UUID" => "6D27AA8B-FE93-442D-B957-46BCC347D5FC",  
   	"@VersionInfo" =>  "libauthinstall-68.1",
-  	"ApECID" =>  86872710412, 
+  	"ApECID" =>  86872710412, # "UniqueChipID"=>86872710412, get from ideviceinfo.rb
   	"ApProductionMode" => true
   }
 

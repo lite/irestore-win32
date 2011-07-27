@@ -132,6 +132,8 @@ module DeviceSocket
       buffer = socket.read(size)
      
       # TODO: a little patch for a plist include '\u0000'
+      p buffer
+      buffer = buffer.gsub("\000", "")
       buffer = buffer.gsub("\u0000", "")
       # xmldoc = REXML::Document.new(buffer)
       # p REXML::XPath.first(xmldoc, "//").to_s
@@ -314,7 +316,7 @@ class DeviceRelay
     # "<plist><dict><key>Request</key><string>Goodbye</string></dict></plist>\0"
     obj = {"Request" => "Goodbye" }
     write_plist(@socket, obj)
-    read_plist(@socket)
+    # read_plist(@socket)
   end
   
   def gen_cert(pub_key)
