@@ -14,7 +14,7 @@ require 'pathname'
 require 'plist_ext'
 require 'ipsw_ext'
 
-def update_img3file
+def update_img3file(ApECID)
   ### unzip
   system("mkdir -p #{PATH_DMG}")
   system("unzip -d #{PATH_DMG} #{FILE_IPSW}")  
@@ -33,7 +33,7 @@ def update_img3file
   	"@APTicket" => true, "@BBTicket" => true,  "@HostIpAddress" =>  "172.16.191.1",
   	"@HostPlatformInfo" => "mac", "@UUID" => "6D27AA8B-FE93-442D-B957-46BCC347D5FC",  
   	"@VersionInfo" =>  "libauthinstall-68.1",
-  	"ApECID" =>  86872710412, # "UniqueChipID"=>86872710412, get from ideviceinfo.rb
+    "ApECID" =>  ApECID, # 86872710412, # "UniqueChipID"=>86872710412, get from ideviceinfo.rb
   	"ApProductionMode" => true
   }
 
@@ -128,6 +128,6 @@ def update_img3file
 end 
 
 if __FILE__ == $0
-  update_img3file
+  update_img3file(86872710412)
 end
 

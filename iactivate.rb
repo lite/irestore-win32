@@ -5,7 +5,7 @@ $: << File.dirname(__FILE__)
 
 require 'rubygems'
 require 'optparse'
-require 'net/http'
+require 'net/https'
 require 'rexml/document'
 require 'pp'   
 require 'iservice'
@@ -110,7 +110,7 @@ def do_activate(is_activate)
 end
 
 if __FILE__ == $0
-  do_activate(false)
+  do_activate(true)
 end
 
 

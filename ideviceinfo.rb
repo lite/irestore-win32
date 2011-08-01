@@ -30,6 +30,7 @@ def getdeviceinfo
   l.ssl_enable(false)
   # 
   l.stop_session(@session_id)
+  d
 end
 
 if __FILE__ == $0

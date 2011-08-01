@@ -33,6 +33,11 @@ FILE_IMGDIR         = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.n88a
 # FILE_RAMDISK        = File.join(PATH_DMG_NEW, "038-1447-003.dmg")
 
 ### 4.3.4
-FILE_IPSW           = File.join(PATH_BASE, "iPhone2,1_4.3.4_8K2_Restore.ipsw")
-FILE_RESTOREDMG     = File.join(PATH_DMG, "038-2191-001.dmg")
-FILE_RAMDISK        = File.join(PATH_DMG_NEW, "038-2169-001.dmg")
+# FILE_IPSW           = File.join(PATH_BASE, "iPhone2,1_4.3.4_8K2_Restore.ipsw")
+# FILE_RESTOREDMG     = File.join(PATH_DMG, "038-2191-001.dmg")
+# FILE_RAMDISK        = File.join(PATH_DMG_NEW, "038-2169-001.dmg")
+
+### 4.3.5
+FILE_IPSW           = File.join(PATH_BASE, "iPhone2,1_4.3.5_8L1_Restore.ipsw")
+FILE_RESTOREDMG     = File.join(PATH_DMG, "038-2287-002.dmg")
+FILE_RAMDISK        = File.join(PATH_DMG_NEW, "038-2257-002.dmg")
