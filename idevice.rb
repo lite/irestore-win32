@@ -122,16 +122,19 @@ class RecoveryV2Mode < AppleDevice
       printf "\n"  if progress == 100;
   end
   
-  def send_file(file)
+  def send_file(filename)
     @handle.usb_control_write(0x41, 0, 0, 0, "", 1000)
     
     packet_size = 0
-      
-    while buffer = file.read(0x800) do
-            @handle.usb_bulk_write(0x4, buffer, 1000)
-      packet_size += buffer.size
-      
-      print_progress_bar(packet_size*100/file.size)
+    total_size = File.size(filename)
+    
+    File.open(filename) do |f|
+      while buffer = f.read(0x800) do
+        @handle.usb_bulk_write(0x4, buffer, 1000)
+        packet_size += buffer.size
+
+        print_progress_bar(packet_size*100/total_size)
+      end
     end
     
     print_progress_bar(100)

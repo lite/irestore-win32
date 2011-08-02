@@ -24,10 +24,8 @@ def enter_restore
     # x.send_command("reboot")
   
     p "sending iBEC"
-    File.open(FILE_IBEC) do |f|
-      x.send_file(f)
-    end
-
+    x.send_file(FILE_IBEC)
+    
     x.send_command("setenv auto-boot false")
     x.send_command("saveenv")
     x.send_command("go")
@@ -40,32 +38,24 @@ def enter_restore
   
     p "sending apple logo"
   
-    File.open(FILE_APPLELOG) do |f|
-      x.send_file(f)
-    end
-  
+    x.send_file(FILE_APPLELOG)
+    
     x.send_command("setpicture 0")
     x.send_command("bgcolor 0 0 0")
 
     p "sending ramdisk"
-    File.open(FILE_RAMDISK) do |f|
-      x.send_file(f)
-    end
-  
+    x.send_file(FILE_RAMDISK)
+    
     x.send_command("ramdisk")
 
     p "sending device tree"
-    File.open(FILE_DEVICETREE) do |f|
-      x.send_file(f)
-    end
+    x.send_file(FILE_DEVICETREE)
 
     x.send_command("devicetree")
 
     p "sending kernel"
-    File.open(FILE_KERNELCACHE) do |f|
-      x.send_file(f)
-    end
-
+    x.send_file(FILE_KERNELCACHE)
+    
     p "booting"
     x.send_command("setenv boot-args rd=md0 nand-enable-reformat=1 -progress")
     x.send_command("bootx")

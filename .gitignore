@@ -3,3 +3,4 @@
 *.lock
 *.bak
 *.log
+*.o
