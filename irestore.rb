@@ -75,13 +75,13 @@ class ASRService < DeviceService
         @io.seek(0)
         
         index = 0
-        
-        while buffer = @io.read(0x1000000) do
+        packet_len = 0x10000
+        while buffer = @io.read(packet_len) do
           @socket.write(buffer)
           index += 1
           
           if index % 16 == 0
-            puts "#{index.to_f / (@size / 0x1000000) * 100}% done"
+            puts "#{index.to_f / (@size / packet_len) * 100}% done"
           end
         end
         break

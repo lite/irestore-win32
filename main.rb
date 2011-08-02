@@ -20,10 +20,10 @@ end
 
 if __FILE__ == $0
   info=getdeviceinfo
-  enter_recovery
   ecid = info["UniqueChipID"] #86872710412
   p ecid
   update_img3file(ecid) 
+  enter_recovery
   enter_restore
   do_restore 
   do_activate(true)

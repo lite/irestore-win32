@@ -16,8 +16,8 @@ require 'ipsw_ext'
 
 def update_img3file(ecid)
   ### unzip
-  system("mkdir -p #{PATH_DMG}")
-  system("unzip -d #{PATH_DMG} #{FILE_IPSW}")  
+  # system("mkdir -p #{PATH_DMG}")
+  # system("unzip -d #{PATH_DMG} #{FILE_IPSW}")  
 
   ### tss request 
   # gc-apple-dump_03
@@ -75,7 +75,7 @@ def update_img3file(ecid)
 
   # pp rqst_obj
   payload = PropertyList.dump(rqst_obj, :xml1)
-  # p payload 
+  p payload 
 
   # http post 
   uri_gs_serv = "http://gs.apple.com/TSS/controller?action=2"
@@ -87,7 +87,7 @@ def update_img3file(ecid)
   request["User-Agent"] = "InetURL/1.0" 
   request["Content-Length"] = payload.length
   request["Content-Type"] = 'text/xml; charset="utf-8"'  
-  request.body = payload                    
+  request.body = payload
   response = http.request(request)
   
   if response.body.include?("STATUS=0&MESSAGE=")
@@ -95,6 +95,7 @@ def update_img3file(ecid)
     buffer = response.body.split("&REQUEST_STRING=")[1]
     # tssresp_fn = "./amai/debug/tss-response.plist"
     # buffer = File.open(tssresp_fn).read
+    p buffer
     obj = PropertyList.load(buffer)
   
     if not obj.nil? 
@@ -128,6 +129,7 @@ def update_img3file(ecid)
 end 
 
 if __FILE__ == $0
-  update_img3file(86872710412)
+  # update_img3file(86872710412) 
+  update_img3file(4302652613389) #4302652613389
 end
 
