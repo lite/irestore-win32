@@ -20,6 +20,7 @@ class RestoreService < DeviceService
       
       if plist["MsgType"] =="DataRequestMsg"
         response = data_request_handler.call(plist["DataType"])
+        pp response
         write_plist(@socket, response) if response
       elsif progress_callback && plist["MsgType"] == "ProgressMsg" 
         progress_callback.call(plist["Operation"], plist["Progress"])
@@ -38,14 +39,8 @@ class ASRService < DeviceService
   def start(input)
 
     p "start ASR."
-    if input.kind_of?(File)
-      @io = input
-      @size = input.stat.size
-    elsif input.kind_of?(String)
-      @io = StringIO.new(input)
-      @size = input.size
-    end
-    
+    @io = input
+    @size = input.stat.size
 
     obj ={
       "FEC Slice Stride" => 40,
@@ -80,8 +75,8 @@ class ASRService < DeviceService
           @socket.write(buffer)
           index += 1
           
-          if index % 16 == 0
-            puts "#{index.to_f / (@size / packet_len) * 100}% done"
+          if index % 20 == 0
+            puts "%.2f%% done" % (index.to_f / (@size / packet_len) * 100)
           end
         end
         break
@@ -177,17 +172,26 @@ def do_restore
     
       other_nor_data = File.open(FILE_MANIFEST).each_line.reject{|x| x =~ /^LLB/}.map do |line|
         fullpath = File.join(FILE_IMGDIR, line.split("\n")[0])
-        StringIO.new(File.open(fullpath).read)
+        # StringIO.new(File.open(fullpath).read)
+        nor_data = File.open(fullpath).read
+        nor_data.blob = true 
+    		nor_data
       end
 
-      response = { "LlbImageData" => StringIO.new(File.open(FILE_LLB).read), "NorImageData" => other_nor_data }
+      llb_data = File.open(FILE_LLB).read
+      llb_data.blob = true 
+      # response = { "LlbImageData" => StringIO.new(File.open(FILE_LLB).read), "NorImageData" => other_nor_data }
+      response = { "LlbImageData" => llb_data, "NorImageData" => other_nor_data }
       
       response
       
     elsif data_type == "KernelCache"
       puts "Got request for KernelCache data"
-      
-      response = { "KernelCacheFile" => StringIO.new(File.open(FILE_KERNELCACHE).read)}
+
+      kernel_data = File.open(FILE_KERNELCACHE).read
+      kernel_data.blob = true
+      response = { "KernelCacheFile" => kernel_data }
+      # response = { "KernelCacheFile" => StringIO.new(File.open(FILE_KERNELCACHE).read)}
       
       response
     end    

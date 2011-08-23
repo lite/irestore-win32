@@ -18,19 +18,14 @@ module PropertyList
   end
   
   def self.dump(obj, fmt = nil)
-    plist = CFPropertyList::List.new
-    plist.value = CFPropertyList.guess(obj)
-    plist.to_str(fmt == :xml1 ? CFPropertyList::List::FORMAT_XML : CFPropertyList::List::FORMAT_BINARY)
+    begin
+      plist = CFPropertyList::List.new
+      plist.value = CFPropertyList.guess(obj)
+      plist.to_str(fmt == :xml1 ? CFPropertyList::List::FORMAT_XML : CFPropertyList::List::FORMAT_BINARY)
+    rescue
+      pp obj, fmt
+    end
   end
-  
-  # ### plist
-  # def self.load(str)
-  #   Plist::parse_xml(str)
-  # end
-  # 
-  # def self.dump(obj, fmt = nil)
-  #   obj.to_plist
-  # end
 end
 
 def test_xml_to_plist
