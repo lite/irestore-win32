@@ -6,84 +6,17 @@ $: << File.join(File.dirname(__FILE__), 'ribusb/lib')
 
 require 'rubygems'
 require 'ribusb' 
-require 'ribusb/compat'
 
 class AppleDevice
-  @@matches = {}
-  
-  def self.match(value)
-    [value[:vendor_id]].flatten.each do |vendor_id|
-      (@@matches ||= {})[vendor_id] ||= {}
-
-      [value[:product_id]].flatten.each do |product_id|
-        @@matches[vendor_id][product_id] = self
-      end
-    end
-  end
-  
-  def self.[](vendor_id, product_id)
-    @@matches[vendor_id][product_id]
-  end
-  
-  def self.available_devices
-    available_ids = {}
-    @@matches.each_pair do |vendor_id, value|
-      value.each_pair do |product_id, klass|
-        available_ids[[vendor_id, product_id]] = klass
-      end
-    end
-        
-    USB.devices.map do |device|
-      available_ids[[device.idVendor, device.idProduct]].new(device) if available_ids.has_key?([device.idVendor, device.idProduct])
-    end.compact
-  end
-  
-  def initialize(device)
-    @device = device
-  end
-end
-
-class RestoreMode < AppleDevice
-  match :vendor_id => 0x5ac, :product_id => [0x1290, 0x1291, 0x1292, 0x1294,] # iPhone, iPod Touch, iPhone3G, iPhone3Gs
-  
-  attr_reader :service
-  
-  def initialize(device)
-    super(device)
-  end
-  
   def open
-    # service = RestoreService.new(62078)
-    # @service = Service[service.request_plist("Request" => "QueryType")["Type"]].new(62078)
-
-    service = RestoreService.new(PORT_RESTORE)
-    @service = Service[service.request_plist("Request" => "QueryType")["Type"]].new(PORT_RESTORE)
-
-  end
-  
-  def recv_buffer   
-    # ret = irecv_control_transfer(client, 0xC0, 0, 0, 0, (unsigned char*) response, 255, 1000);
-    size = @handle.usb_interrupt_read(0x81, @receive_buffer, 0)
-    # size = @handle.usb_control_read(0xC0, 0, 0, 0, @receive_buffer, 1000);
+    @usb = RibUSB::Bus.new
+    @usb.debug = 1
+    @device = @usb.find(:idVendor => 0x5ac, :idProduct => 0x1281).first
     
-    @receive_buffer[0, size]
-  end
-  
-end
-
-class RecoveryV2Mode < AppleDevice
-  match :vendor_id => 0x5ac, :product_id => 0x1281
-  
-  def initialize(device)
-    super(device)
-  end
-  
-  def open
-    @handle = @device.open
-    @handle.set_configuration(1)
-    @handle.set_altinterface(0, 0)
-    @handle.set_altinterface(1, 1)
-    @receive_buffer = "\x00" * 0x400
+    @device.configuration = 1
+    @device.claimInterface(0)
+    @device.setInterfaceAltSetting(0, 0)
+    
     sleep(2)
     
     self
@@ -92,16 +25,22 @@ class RecoveryV2Mode < AppleDevice
   def send_command(command)
     begin
       p "send_command #{command}.\n"
-      @handle.usb_control_write(0x40, 0, 0, 0, command + "\0", 0)
+      @device.controlTransfer(:bmRequestType => 0x40, :bRequest => 0, :wValue => 0, :wIndex => 0, :dataOut => command + "\0")
     rescue
       p "===="
     end
   end
 
   def recv_command
-    size = @handle.usb_control_read(0xC0, 0, 0, 0, @receive_buffer, 0)
+    begin
+      receive_buffer = "\x00" * 0x10
+      size = @device.controlTransfer(:bmRequestType => 0xC0, :bRequest => 0, :wValue => 0, :wIndex => 0, :dataIn => receive_buffer, :timeout => 0)
+      p size
     
-    @receive_buffer[0, size]
+      receive_buffer[0, size]
+    rescue
+      p "----"
+    end
   end
   
   def print_progress_bar(progress)
@@ -123,14 +62,15 @@ class RecoveryV2Mode < AppleDevice
   end
   
   def send_file(filename)
-    @handle.usb_control_write(0x41, 0, 0, 0, "", 1000)
+    @device.controlTransfer(:bmRequestType => 0x41, :bRequest => 0, :wValue => 0, :wIndex => 0)
     
     packet_size = 0
     total_size = File.size(filename)
     
     File.open(filename) do |f|
       while buffer = f.read(0x800) do
-        @handle.usb_bulk_write(0x4, buffer, 1000)
+        @device.bulkTransfer(:endpoint=>4, :dataOut => buffer, :timeout => 1000)
+        
         packet_size += buffer.size
 
         print_progress_bar(packet_size*100/total_size)
@@ -143,11 +83,11 @@ class RecoveryV2Mode < AppleDevice
   end
   
   def close
-    @handle.release_interface(1)
-    @handle.release_interface(0)
-    @handle.usb_close
-    sleep(2)
-    # @handle.usb_reset()
-    
+    begin
+      @device.releaseInterface(0)
+    rescue
+      p "reboot..."
+    end
+      sleep(2)
   end
 end

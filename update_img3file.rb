@@ -15,10 +15,6 @@ require 'plist_ext'
 require 'ipsw_ext'
 
 def update_img3file(ecid)
-  ### unzip
-  system("mkdir -p #{PATH_DMG}")
-  system("unzip -d #{PATH_DMG} #{FILE_IPSW}")  
-
   ### tss request 
   # gc-apple-dump_03
   # tssrqst_fn = "./amai/debug/tss-request.plist"

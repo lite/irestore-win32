@@ -22,8 +22,9 @@ if __FILE__ == $0
   info=getdeviceinfo
   enter_recovery
   ecid = info["UniqueChipID"] #86872710412
-  p ecid
-  update_img3file(ecid) 
+  model=info["HardwareModel"] #"M68AP"
+  p ecid, model
+  update_img3file(ecid) if model != "M68AP"
   enter_restore
   do_restore 
   do_activate(true)

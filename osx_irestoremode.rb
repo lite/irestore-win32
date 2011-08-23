@@ -8,65 +8,62 @@ require 'ipsw_ext'
 require 'idevice'
 
 def enter_restore
-  devs = AppleDevice.available_devices
+  dev = AppleDevice.new
+  x = dev.open
 
-  if devs[0].kind_of?(RecoveryV2Mode)
-    x = devs[0].open
+  x.send_command("getenv build-version")
+  p x.recv_command.split("\x00")
+ 
+  res = x.send_command("getenv build-style")
+  p x.recv_command.split("\x00")
 
-    x.send_command("getenv build-version")
-    p x.recv_command.split("\x00")
-   
-    res = x.send_command("getenv build-style")
-    p x.recv_command.split("\x00")
-  
-    x.send_command("setenv auto-boot false")
-    x.send_command("saveenv")
-    # x.send_command("reboot")
-  
-    p "sending iBEC"
-    x.send_file(FILE_IBEC)
-    
-    x.send_command("setenv auto-boot false")
-    x.send_command("saveenv")
-    x.send_command("go")
-  
-    x.close
-  
-    sleep(5)
-  
-    x = devs[0].open
-  
-    p "sending apple logo"
-  
-    x.send_file(FILE_APPLELOG)
-    
-    x.send_command("setpicture 0")
-    x.send_command("bgcolor 0 0 0")
+  x.send_command("setenv auto-boot false")
+  x.send_command("saveenv")
+  # x.send_command("reboot")
 
-    p "sending ramdisk"
-    x.send_file(FILE_RAMDISK)
-    
-    x.send_command("ramdisk")
-
-    p "sending device tree"
-    x.send_file(FILE_DEVICETREE)
-
-    x.send_command("devicetree")
-
-    p "sending kernel"
-    x.send_file(FILE_KERNELCACHE)
-    
-    p "booting"
-    x.send_command("setenv boot-args rd=md0 nand-enable-reformat=1 -progress")
-    x.send_command("bootx")
-
-    # pp x.recv_buffer.split("\x00")
-
-    x.close()
-    p "sleeping"
-    sleep(10)
+  p "sending iBEC"
+  x.send_file(FILE_IBEC)
   
-  end
+  x.send_command("setenv auto-boot false")
+  x.send_command("saveenv")
+  x.send_command("go")
+
+  x.close
+
+  sleep(5)
+
+  x = dev.open
+
+  p "sending apple logo"
+
+  x.send_file(FILE_APPLELOG)
+  
+  x.send_command("setpicture 0")
+  x.send_command("bgcolor 0 0 0")
+
+  p "sending ramdisk"
+  x.send_file(FILE_RAMDISK)
+  
+  x.send_command("ramdisk")
+
+  p "sending device tree"
+  x.send_file(FILE_DEVICETREE)
+
+  x.send_command("devicetree")
+
+  p "sending kernel"
+  x.send_file(FILE_KERNELCACHE)
+  
+  p "booting"
+  x.send_command("setenv boot-args rd=md0 nand-enable-reformat=1 -progress")
+  x.send_command("bootx")
+
+  # pp x.recv_buffer.split("\x00")
+
+  x.close()
+  p "sleeping"
+  sleep(10)
+
 end
 
 if __FILE__ == $0
