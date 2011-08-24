@@ -74,7 +74,14 @@ install rvm and gems
     gem install libxml-ruby
     gem install bit-struct
     gem install CFPropertyList
+
+FAQ
+----
 	
+	  install gcc on cygwin
+	  
+    extconf failure: need libm
+
 Run
 ----
 
