@@ -69,7 +69,7 @@ class AppleDevice
     
     File.open(filename) do |f|
       while buffer = f.read(0x800) do
-        @device.bulkTransfer(:endpoint=>4, :dataOut => buffer, :timeout => 1000)
+        @device.bulkTransfer(:endpoint=>4, :dataOut => buffer)
         
         packet_size += buffer.size
 

@@ -116,9 +116,9 @@ module DeviceSocket
     if data.kind_of?(Hash) || data.kind_of?(Array)
 			if fmt == :xml1
 	      data = PropertyList.dump(data, fmt)   
-	    	p "==write_plist==#{data}"
+	    	p "==write_plist==", data.length
 	 		else
-				pp "==write_plist==", data
+				pp "==write_plist==", data.length
 	      data = PropertyList.dump(data, fmt)   
 			end
     end

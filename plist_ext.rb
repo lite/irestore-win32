@@ -23,7 +23,7 @@ module PropertyList
       plist.value = CFPropertyList.guess(obj)
       plist.to_str(fmt == :xml1 ? CFPropertyList::List::FORMAT_XML : CFPropertyList::List::FORMAT_BINARY)
     rescue
-      pp obj, fmt
+      pp obj, fmt, "~~~~~~~~~~"
     end
   end
 end

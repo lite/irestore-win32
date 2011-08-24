@@ -20,7 +20,6 @@ class RestoreService < DeviceService
       
       if plist["MsgType"] =="DataRequestMsg"
         response = data_request_handler.call(plist["DataType"])
-        pp response
         write_plist(@socket, response) if response
       elsif progress_callback && plist["MsgType"] == "ProgressMsg" 
         progress_callback.call(plist["Operation"], plist["Progress"])

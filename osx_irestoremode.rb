@@ -7,7 +7,7 @@ require 'rubygems'
 require 'ipsw_ext'
 require 'idevice'
 
-def enter_restore
+def send_ibec
   dev = AppleDevice.new
   x = dev.open
 
@@ -30,7 +30,11 @@ def enter_restore
 
   x.close
 
-  sleep(5)
+  sleep(10)
+end
+
+def send_ramdisk
+  dev = AppleDevice.new
 
   x = dev.open
 
@@ -64,6 +68,11 @@ def enter_restore
   p "sleeping"
   sleep(10)
 
+end
+
+def enter_restore
+  send_ibec
+  send_ramdisk
 end
 
 if __FILE__ == $0
