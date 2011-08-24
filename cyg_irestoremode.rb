@@ -21,12 +21,8 @@ end
 
 def irecovery_file(unix_path)
   #cygpath -w /home/dli/tools/iOS/ipsw/dmg_new/Firmware/dfu/iBEC.n88ap.RELEASE.dfu
-  cmd = "echo `cygpath -w #{unix_path}`| #{PATH_IRECOVERY} -f "
-  Open3.popen3(cmd) do |io_in, io_out, io_err|
-    while line = io_out.gets
-      print ":", line
-    end
-  end
+  args = "-f `cygpath -w #{unix_path}` "
+  run_irecovery(args)
 end
  
 def enter_restore
