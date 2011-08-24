@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby 
 # encoding: utf-8
 
+$: << File.join(File.dirname(__FILE__), "./CFPropertyList/lib")
+
 require 'rubygems'
 require 'cfpropertylist'
 # require 'plist'
@@ -58,8 +60,8 @@ def test_cfpropertylist
 	# call CFPropertyList.guess() to create corresponding CFType values
 	plist.value = CFPropertyList.guess(data)
 	# write plist to file
-	plist.save("example.plist", CFPropertyList::List::FORMAT_BINARY)
-  plist.save("example.xml", CFPropertyList::List::FORMAT_XML)
+  # plist.save("example.plist", CFPropertyList::List::FORMAT_BINARY)
+  #   plist.save("example.xml", CFPropertyList::List::FORMAT_XML)
 
 	# … later, read it again
 	plist = CFPropertyList::List.new(:file => "example.plist")

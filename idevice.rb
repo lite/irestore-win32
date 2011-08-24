@@ -7,13 +7,14 @@ $: << File.join(File.dirname(__FILE__), 'ribusb/lib')
 require 'rubygems'
 require 'ribusb' 
 
+$USB = RibUSB::Bus.new
+
 class AppleDevice
   def open
-    @usb = RibUSB::Bus.new
-    @usb.debug = 1
-    @device = @usb.find(:idVendor => 0x5ac, :idProduct => 0x1281).first
-    
+    @device = $USB.find(:idVendor => 0x5ac, :idProduct => 0x1281).first
     @device.configuration = 1
+    # @device.claimInterface(1)
+    # @device.setInterfaceAltSetting(1, 1)
     @device.claimInterface(0)
     @device.setInterfaceAltSetting(0, 0)
     
@@ -57,7 +58,7 @@ class AppleDevice
           printf " " ;
         end
       end
-    printf "] #{progress}"
+    printf "] #{progress}%%"
       printf "\n"  if progress == 100;
   end
   
@@ -68,11 +69,11 @@ class AppleDevice
     total_size = File.size(filename)
     
     File.open(filename) do |f|
-      while buffer = f.read(0x800) do
-        @device.bulkTransfer(:endpoint=>4, :dataOut => buffer)
-        
+      while buffer = f.read(0x4000) do
+        sent = @device.bulkTransfer(:endpoint=>4, :dataOut => buffer)
+        # @device.clearHalt(0x4) unless sent
+                
         packet_size += buffer.size
-
         print_progress_bar(packet_size*100/total_size)
       end
     end
@@ -85,6 +86,7 @@ class AppleDevice
   def close
     begin
       @device.releaseInterface(0)
+      # @device.resetDevice
     rescue
       p "reboot..."
     end

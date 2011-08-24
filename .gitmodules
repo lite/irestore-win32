@@ -4,3 +4,6 @@
 [submodule "ribusb"]
 	path = ribusb
 	url = git://github.com/libin/ribusb.git
+[submodule "CFPropertyList"]
+	path = CFPropertyList
+	url = git://github.com/ckruse/CFPropertyList.git

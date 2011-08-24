@@ -31,6 +31,14 @@ install libusb
 cygwin
 ----
 
+sshd 
+   
+   puttycyg
+   
+   ssh-host-config -y  # tty ntsec
+   ssh-user-config
+   cygrunsrv -S sshd
+
 cygwin
 
     http://www.cygwin.com/
@@ -82,7 +90,15 @@ Ref
 
 irecovery
 	
-    git://github.com/iH8sn0w/syringe-irecovery.git
+    http://github.com/iH8sn0w/syringe-irecovery
+    
+ribusb
+    
+    http://github.com/libin/ribusb
+
+CFPropertyList
+
+    http://github.com/ckruse/CFPropertyList
   
 win32
 ----
