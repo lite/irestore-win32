@@ -49,7 +49,7 @@ def enter_restore
   irecovery_file(FILE_APPLELOG)
   run_irecovery("-c setpicture 0")
   # run_irecovery("-c bgcolor 0 0 0")
-  run_irecovery("-c bgcolor 0 255 0")
+  run_irecovery("-c 'bgcolor 0 255 0'")
   sleep(1)
  
   p "sending ramdisk"
