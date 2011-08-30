@@ -7,9 +7,10 @@ require 'rubygems'
 require 'ipsw_ext'
 require 'idevice'
 
+$dev = AppleDevice.new
+
 def send_ibec
-  dev = AppleDevice.new
-  x = dev.open
+  x = $dev.open
 
   x.send_command("getenv build-version")
   p x.recv_command.split("\x00")
@@ -19,7 +20,6 @@ def send_ibec
 
   x.send_command("setenv auto-boot false")
   x.send_command("saveenv")
-  # x.send_command("reboot")
 
   p "sending iBEC"
   x.send_file(FILE_IBEC)
@@ -34,9 +34,7 @@ def send_ibec
 end
 
 def send_ramdisk
-  dev = AppleDevice.new
-
-  x = dev.open
+  x = $dev.open
 
   p "sending apple logo"
 
@@ -61,8 +59,6 @@ def send_ramdisk
   p "booting"
   x.send_command("setenv boot-args rd=md0 nand-enable-reformat=1 -progress")
   x.send_command("bootx")
-
-  # pp x.recv_buffer.split("\x00")
 
   x.close()
   p "sleeping"
