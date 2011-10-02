@@ -18,10 +18,10 @@ PATH_DMG            = File.join(PATH_BASE, "ipsw/dmg")
 
 # 
 #### iphone 3gs
-# DEVICE_BOARDCONFIG  = "m68ap"
-# PATH_DMG_NEW        = File.join(PATH_BASE, "ipsw/dmg_new")
-# FILE_KERNELCACHE    = File.join(PATH_DMG_NEW, "kernelcache.release.n88")
-# FILE_APPLELOG       = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/applelogo.s5l8920x.img3")
+DEVICE_BOARDCONFIG  = "n88ap"
+PATH_DMG_NEW        = File.join(PATH_BASE, "ipsw/dmg_new")
+FILE_KERNELCACHE    = File.join(PATH_DMG_NEW, "kernelcache.release.n88")
+FILE_APPLELOG       = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/applelogo.s5l8920x.img3")
 
 ### 4.3.3
 # FILE_IPSW           = File.join(PATH_BASE, "iPhone2,1_4.3.3_8J2_Restore.ipsw")
@@ -36,22 +36,22 @@ PATH_DMG            = File.join(PATH_BASE, "ipsw/dmg")
 # FILE_MANIFEST_PLIST = File.join(PATH_DMG, "BuildManifest.plist")
 
 ### 4.3.5
-# FILE_IPSW           = File.join(PATH_BASE, "iPhone2,1_4.3.5_8L1_Restore.ipsw")
-# FILE_RESTOREDMG     = File.join(PATH_DMG, "038-2287-002.dmg")
-# FILE_RAMDISK        = File.join(PATH_DMG_NEW, "038-2257-002.dmg")
-# FILE_MANIFEST_PLIST = File.join(PATH_DMG, "BuildManifest.plist")
+FILE_IPSW           = File.join(PATH_BASE, "iPhone2,1_4.3.5_8L1_Restore.ipsw")
+FILE_RESTOREDMG     = File.join(PATH_DMG, "038-2287-002.dmg")
+FILE_RAMDISK        = File.join(PATH_DMG_NEW, "038-2257-002.dmg")
+FILE_MANIFEST_PLIST = File.join(PATH_DMG, "BuildManifest.plist")
 
 #### iphone
-DEVICE_BOARDCONFIG  = "m68ap"
-PATH_DMG_NEW        = PATH_DMG
-FILE_KERNELCACHE    = File.join(PATH_DMG_NEW, "kernelcache.release.s5l8900x")
-FILE_APPLELOG       = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/applelogo.s5l8900x.img3")
+# DEVICE_BOARDCONFIG  = "m68ap"
+# PATH_DMG_NEW        = PATH_DMG
+# FILE_KERNELCACHE    = File.join(PATH_DMG_NEW, "kernelcache.release.s5l8900x")
+# FILE_APPLELOG       = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/applelogo.s5l8900x.img3")
 
 ### 3.1.3
-FILE_IPSW           = File.join(PATH_BASE, "iPhone1,1_3.1.3_7E18_Restore.ipsw")
-FILE_RESTOREDMG     = File.join(PATH_DMG, "018-6482-014.dmg")
-FILE_RAMDISK        = File.join(PATH_DMG_NEW, "018-6494-014.dmg")
-FILE_MANIFEST_PLIST = File.join(PATH_DMG, "BuildManifesto.plist")
+# FILE_IPSW           = File.join(PATH_BASE, "iPhone1,1_3.1.3_7E18_Restore.ipsw")
+# FILE_RESTOREDMG     = File.join(PATH_DMG, "018-6482-014.dmg")
+# FILE_RAMDISK        = File.join(PATH_DMG_NEW, "018-6494-014.dmg")
+# FILE_MANIFEST_PLIST = File.join(PATH_DMG, "BuildManifesto.plist")
 
 # img3 files
 FILE_MANIFEST       = File.join(PATH_DMG, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/manifest")

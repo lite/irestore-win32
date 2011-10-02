@@ -113,6 +113,7 @@ iTools
   
 win32
 ----
+C:\Documents and Settings\Administrator\Application Data\Apple Computer\iTunes\iPhone Software Updates
 
 C:\Documents and Settings\Administrator\Local Settings\Application Data\Apple\Apple Software Update
 C:\Documents and Settings\All Users\Application Data\Apple Computer\iTunes\iPhone Temporary Files
