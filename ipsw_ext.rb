@@ -61,5 +61,5 @@ FILE_LLB            = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DE
 FILE_IMGDIR         = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production")
 
 ### unzip
-system("mkdir -p #{PATH_DMG}")
-system("unzip -d #{PATH_DMG} #{FILE_IPSW}")
+#system("mkdir -p #{PATH_DMG}")
+#system("unzip -d #{PATH_DMG} #{FILE_IPSW}")
