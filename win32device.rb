@@ -18,12 +18,12 @@ require "Win32API"
 #OPEN_EXISTING    = 0x00000003
 #FILE_FLAG_OVERLAPPED          = 0x40000000
 
+#DIGCF_PRESENT = 0x00000002
+#DIGCF_DEVICEINTERFACE = 0x00000010
+
 class Win32Device
 
   def initialize
-    #@path = '\??\USB#Vid_05ac&Pid_1281#CPID:8920_CPRV:15_CPFM:03_SCEP:04_BDID:00_ECID:000000143A045D0C_IBFL:00_SRNM:[889437758M8]_IMEI:[012037007915703]#{a5dcbf10-6530-11d2-901f-00c04fb951ed}'
-    @path = '\??\USB#Vid_05ac&Pid_1281#CPID:8920_CPRV:15_CPFM:03_SCEP:04_BDID:00_ECID:000000143A045D0C_IBFL:01_SRNM:[889437758M8]_IMEI:[012037007915703]#{a5dcbf10-6530-11d2-901f-00c04fb951ed}'
-
     @createFile = Win32API.new('kernel32', 'CreateFile', 'PLLPLLL', 'L')
     @deviceIoControl = Win32API.new('kernel32', 'DeviceIoControl', 'LLPLPLPP', 'I')
     @closeHandle = Win32API.new("kernel32", "CloseHandle", ["L"], 'L')
@@ -32,10 +32,36 @@ class Win32Device
     @getOverlappedResult = Win32API.new('kernel32', 'GetOverlappedResult', 'LPPI', 'I')
     @waitForSingleObject = Win32API.new('kernel32', 'WaitForSingleObject', 'LL', 'L')
     @cancelIo = Win32API.new("kernel32", "CancelIo", 'L', 'L')
+
+    @setupDiGetClassDevs = Win32API.new('setupapi', 'SetupDiGetClassDevs', 'PLLL', 'L')
+    @setupDiEnumDeviceInterfaces = Win32API.new('setupapi', 'SetupDiEnumDeviceInterfaces', 'LLPLP', 'L')
+    @setupDiGetDeviceInterfaceDetail = Win32API.new('setupapi', 'SetupDiGetDeviceInterfaceDetail', 'LPLPLL', 'L')
+    @setupDiDestroyDeviceInfoList = Win32API.new('setupapi', 'SetupDiDestroyDeviceInfoList', 'L', 'L')
+  end
+
+  def getDevPath;
+    #@path = '\??\USB#Vid_05ac&Pid_1281#CPID:8920_CPRV:15_CPFM:03_SCEP:04_BDID:00_ECID:000000143A045D0C_IBFL:00_SRNM:[889437758M8]_IMEI:[012037007915703]#{a5dcbf10-6530-11d2-901f-00c04fb951ed}'
+    #'\\.\USB#Vid_05ac&Pid_1281#CPID:8920_CPRV:15_CPFM:03_SCEP:04_BDID:00_ECID:000000143A045D0C_IBFL:01_SRNM:[889437758M8]_IMEI:[012037007915703]#{a5dcbf10-6530-11d2-901f-00c04fb951ed}'
+    uuid = [0].pack('L')
+    hdi = @setupDiGetClassDevs.call(uuid, 0, 0, 0x12)
+    spdid = [0].pack('L')
+    idx = 0
+    while 1 do
+      ret = @setupDiEnumDeviceInterfaces.call(hdi, 0, uuid, idx, spdid)
+      idx += 1
+      break unless ret
+      bytes = 0
+      spdidd = [0].pack('L')
+      ret = @setupDiGetDeviceInterfaceDetail.call(hdi, spdid, 0, spdidd, bytes, 0)
+      @setupDiDestroyDeviceInfoList.call(hdi)
+      spdidd.unpack('L') if ret
+    end
   end
 
   def open
+    @path = getDevPath
     @h = @createFile.call(@path, 0xc0000000, 0x3, 0, 0x3, 0x40000000, 0)
+    puts @h
   end
 
   #@device.controlTransfer(:bmRequestType => 0x40, :bRequest => 0, :wValue => 0, :wIndex => 0, :dataOut => command + "\0")
