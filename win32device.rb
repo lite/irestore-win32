@@ -5,6 +5,7 @@ $: << File.dirname(__FILE__)
 
 require 'rubygems'
 require "Win32API"
+require "pp"
 
 #static const GUID GUID_DEVINTERFACE_IBOOT = {0xED82A167L, 0xD61A, 0x4AF6, {0x9A, 0xB6, 0x11, 0xE5, 0x22, 0x36, 0xC5, 0x76}};
 #static const GUID GUID_DEVINTERFACE_DFU = {0xB8085869L, 0xFEB9, 0x404B, {0x8C, 0xB1, 0x1E, 0x5C, 0x14, 0xFA, 0x8C, 0x54}};
@@ -42,9 +43,13 @@ class Win32Device
   def getDevPath;
     #@path = '\??\USB#Vid_05ac&Pid_1281#CPID:8920_CPRV:15_CPFM:03_SCEP:04_BDID:00_ECID:000000143A045D0C_IBFL:00_SRNM:[889437758M8]_IMEI:[012037007915703]#{a5dcbf10-6530-11d2-901f-00c04fb951ed}'
     #'\\.\USB#Vid_05ac&Pid_1281#CPID:8920_CPRV:15_CPFM:03_SCEP:04_BDID:00_ECID:000000143A045D0C_IBFL:01_SRNM:[889437758M8]_IMEI:[012037007915703]#{a5dcbf10-6530-11d2-901f-00c04fb951ed}'
-    uuid = [0].pack('L')
+
+    uuid = [0xED82A167, 0xD61A, 0x4AF6, 0x9A, 0xB6, 0x11, 0xE5, 0x22, 0x36, 0xC5, 0x76].pack('LSSCCCCCCCC')
+    pp uuid
     hdi = @setupDiGetClassDevs.call(uuid, 0, 0, 0x12)
-    spdid = [0].pack('L')
+    pp hdi
+    spdid = [0x1C].pack('L')+"A"*0x18
+    pp spdid
     idx = 0
     while 1 do
       ret = @setupDiEnumDeviceInterfaces.call(hdi, 0, uuid, idx, spdid)
@@ -54,7 +59,12 @@ class Win32Device
       spdidd = [0].pack('L')
       ret = @setupDiGetDeviceInterfaceDetail.call(hdi, spdid, 0, spdidd, bytes, 0)
       @setupDiDestroyDeviceInfoList.call(hdi)
-      spdidd.unpack('L') if ret
+      if bytes > 0 then
+        puts bytes
+        pp spdidd
+
+        spdidd.unpack('L') if ret
+      end
     end
   end
 

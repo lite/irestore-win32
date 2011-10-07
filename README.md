@@ -31,13 +31,16 @@ install libusb
 cygwin
 ----
 
+user
+
+    mkpasswd -l > /etc/passwd
+    mkgroup -l > /etc/group
+
 sshd 
    
-   puttycyg
-   
-   ssh-host-config -y  # tty ntsec
-   ssh-user-config
-   cygrunsrv -S sshd
+    ssh-host-config -y  # tty ntsec
+    ssh-user-config
+    cygrunsrv -S sshd
 
 cygwin
 
