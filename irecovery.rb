@@ -9,7 +9,7 @@ require 'win32device'
 class IRecoveryDevice
 
   def initialize
-    @device = Win32Device::Win32Device.new
+    @device = Win32Device.new
   end
 
   def open

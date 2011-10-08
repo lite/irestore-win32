@@ -22,6 +22,10 @@ require "pp"
 #DIGCF_PRESENT = 0x00000002
 #DIGCF_DEVICEINTERFACE = 0x00000010
 
+#ERROR_DISK_FULL = 112;
+#ERROR_NO_MORE_ITEMS = 259
+#ERROR_INVALID_USER_BUFFER = 1784
+
 class Win32Device
 
   def initialize
@@ -34,43 +38,43 @@ class Win32Device
     @waitForSingleObject = Win32API.new('kernel32', 'WaitForSingleObject', 'LL', 'L')
     @cancelIo = Win32API.new("kernel32", "CancelIo", 'L', 'L')
 
-    @setupDiGetClassDevs = Win32API.new('setupapi', 'SetupDiGetClassDevs', 'PLLL', 'L')
-    @setupDiEnumDeviceInterfaces = Win32API.new('setupapi', 'SetupDiEnumDeviceInterfaces', 'LLPLP', 'L')
-    @setupDiGetDeviceInterfaceDetail = Win32API.new('setupapi', 'SetupDiGetDeviceInterfaceDetail', 'LPLPLL', 'L')
-    @setupDiDestroyDeviceInfoList = Win32API.new('setupapi', 'SetupDiDestroyDeviceInfoList', 'L', 'L')
+    @getLastError = Win32API.new("kernel32","GetLastError",[],"L")
+
+    @setupDiGetClassDevs = Win32API.new('setupapi', 'SetupDiGetClassDevs', 'PPPL', 'L')
+    @setupDiEnumDeviceInterfaces = Win32API.new('setupapi', 'SetupDiEnumDeviceInterfaces', 'LPPLP', 'B')
+    @setupDiGetDeviceInterfaceDetail = Win32API.new('setupapi', 'SetupDiGetDeviceInterfaceDetail', 'LPPLPP', 'B')
+    @setupDiDestroyDeviceInfoList = Win32API.new('setupapi', 'SetupDiDestroyDeviceInfoList', 'L', 'B')
   end
 
-  def getDevPath;
-    #@path = '\??\USB#Vid_05ac&Pid_1281#CPID:8920_CPRV:15_CPFM:03_SCEP:04_BDID:00_ECID:000000143A045D0C_IBFL:00_SRNM:[889437758M8]_IMEI:[012037007915703]#{a5dcbf10-6530-11d2-901f-00c04fb951ed}'
-    #'\\.\USB#Vid_05ac&Pid_1281#CPID:8920_CPRV:15_CPFM:03_SCEP:04_BDID:00_ECID:000000143A045D0C_IBFL:01_SRNM:[889437758M8]_IMEI:[012037007915703]#{a5dcbf10-6530-11d2-901f-00c04fb951ed}'
+  def get_devpath;
+    dev_path = ""
 
-    uuid = [0xED82A167, 0xD61A, 0x4AF6, 0x9A, 0xB6, 0x11, 0xE5, 0x22, 0x36, 0xC5, 0x76].pack('LSSCCCCCCCC')
-    pp uuid
-    hdi = @setupDiGetClassDevs.call(uuid, 0, 0, 0x12)
-    pp hdi
-    spdid = [0x1C].pack('L')+"A"*0x18
-    pp spdid
+    #uuid = [0xB8085869, 0xFEB9, 0x404B, 0x8C, 0xB1, 0x1E, 0x5C, 0x14, 0xFA, 0x8C, 0x54].pack('LSSCCCCCCCC')    # DFU
+    uuid = [0xED82A167, 0xD61A, 0x4AF6, 0x9A, 0xB6, 0x11, 0xE5, 0x22, 0x36, 0xC5, 0x76].pack('LSSCCCCCCCC')   # iBoot
+    hdi = @setupDiGetClassDevs.call(uuid, nil, nil, 0x12)
     idx = 0
-    while 1 do
-      ret = @setupDiEnumDeviceInterfaces.call(hdi, 0, uuid, idx, spdid)
+    loop do
+      spdid = [0x18+0x4].pack('L')+[0x00].pack('C')*0x18
+      @setupDiEnumDeviceInterfaces.call(hdi, nil, uuid, idx, spdid)
+      error = @getLastError.call()
+      pp  "setupDiEnumDeviceInterfaces #{error}, #{idx}"
+      break if error == 259
       idx += 1
-      break unless ret
-      bytes = 0
-      spdidd = [0].pack('L')
-      ret = @setupDiGetDeviceInterfaceDetail.call(hdi, spdid, 0, spdidd, bytes, 0)
-      @setupDiDestroyDeviceInfoList.call(hdi)
-      if bytes > 0 then
-        puts bytes
-        pp spdidd
-
-        spdidd.unpack('L') if ret
-      end
+      required_size = [0x00].pack('L')
+      @setupDiGetDeviceInterfaceDetail.call(hdi, spdid, nil, 0, required_size, nil)
+      buffer_size = required_size.unpack('L')[0]
+      pp  "setupDiGetDeviceInterfaceDetail", required_size, buffer_size
+      spdidd = [0x5].pack('L') + [0x00].pack('C')*(buffer_size-0x4)  # here size must be 0x5
+      @setupDiGetDeviceInterfaceDetail.call(hdi, spdid, spdidd, buffer_size, nil, nil)
+      pp  "setupDiGetDeviceInterfaceDetail #{dev_path}, #{buffer_size}",spdidd
+      dev_path = spdidd[4..-1].to_s
     end
+    @setupDiDestroyDeviceInfoList.call(hdi)
+    dev_path
   end
 
-  def open
-    @path = getDevPath
-    @h = @createFile.call(@path, 0xc0000000, 0x3, 0, 0x3, 0x40000000, 0)
+  def open path
+    @h = @createFile.call(path, 0xc0000000, 0x3, 0, 0x3, 0x40000000, 0)
     puts @h
   end
 
@@ -80,11 +84,13 @@ class Win32Device
     puts params
     event = @createEvent.Call(0, 0, 0, 0)
     overlapped = [0, 0, 0, 0, event].pack("L*")
-    packet = [params[:bmRequestType], params[:bRequest], params[:wValue], params[:wIndex]].pack("CCSS")
+    packet = [params[:bmRequestType], params[:bRequest], params[:wValue], params[:wIndex]].pack('CCSS')
     if params.has_key?(:dataOut) then
       dataOut = params[:dataOut]
-      packet += [dataOut.size, dataOut].pack("L*")
+      packet += [dataOut.size].pack('S')
+      packet += dataOut
     end
+    pp packet
     bytes = 0
     if params.has_key?(:dataIn) then
       dataIn = params[:dataIn]
@@ -92,10 +98,16 @@ class Win32Device
     else
       outbuf = packet
     end
+    if params.has_key?(:timeout) then
+      timeout = params[:timeout]
+    else
+      timeout = 1000
+    end
     @deviceIoControl.call(@h, 0x2200A0, packet, packet.size, outbuf, outbuf.size, bytes, overlapped)
-    @waitForSingleObject.call(event, params[:timeout])
-    res = @getOverlappedResult.Call(@h, overlapped, bytes, 1)
+    @waitForSingleObject.call(event, timeout)
+    @getOverlappedResult.Call(@h, overlapped, bytes, 1)
     @closeHandle.call(@h)
+    pp "#{bytes}", outbuf
     bytes
   end
 
