@@ -14,12 +14,15 @@ require 'pathname'
 require 'plist_ext'
 require 'ipsw_ext'
 
-def update_img3file(ecid)
+def update_img3file(ecid, ipsw_info)
+  unzip_ipsw ipsw_info
+
   ### tss request 
   # gc-apple-dump_03
   # tssrqst_fn = "./amai/debug/tss-request.plist"
   # payload = File.open(tssrqst_fn).read
-  buffer = File.open(FILE_MANIFEST_PLIST).read
+  #buffer = File.open(FILE_MANIFEST_PLIST).read
+  buffer = File.open(ipsw_info[:file_manifest_plist]).read
   # p buffer
   obj = PropertyList.load(buffer)
   # pp obj["BuildIdentities"][0]
@@ -125,7 +128,8 @@ def update_img3file(ecid)
 end 
 
 if __FILE__ == $0
-  # update_img3file(86872710412) 
-  update_img3file(4302652613389) #4302652613389
+  # update_img3file(86872710412)
+  ipsw_info = get_ipsw_info("n88ap", "ios5_0")
+  update_img3file(4302652613389, ipsw_info) #4302652613389
 end
 

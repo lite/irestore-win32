@@ -5,40 +5,44 @@ $: << File.dirname(__FILE__)
 
 require 'rubygems'
 
-if /darwin/ =~ RUBY_PLATFORM
-  PATH_IRECOVERY = File.join(File.dirname(__FILE__), "irecovery");
-else
-  PATH_IRECOVERY = File.join(File.dirname(__FILE__), "s-irecovery.exe");
-end
+#if /darwin/ =~ RUBY_PLATFORM
+#  PATH_IRECOVERY = File.join(File.dirname(__FILE__), "irecovery");
+#else
+#  PATH_IRECOVERY = File.join(File.dirname(__FILE__), "s-irecovery.exe");
+#end
+#
+#PATH_BASE = File.expand_path("~/tools/iOS")
+#p PATH_BASE
+#
+#PATH_DMG = File.join(PATH_BASE, "ipsw/dmg")
+#
+##
+##### iphone 3gs
+#DEVICE_BOARDCONFIG = "n88ap"
+#PATH_DMG_NEW = File.join(PATH_BASE, "ipsw/dmg_new")
+#FILE_KERNELCACHE = File.join(PATH_DMG_NEW, "kernelcache.release.n88")
+#FILE_APPLELOG = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/applelogo.s5l8920x.img3")
+#
+#### 4.3.5
+#FILE_IPSW = File.join(PATH_BASE, "iPhone2,1_4.3.5_8L1_Restore.ipsw")
+#FILE_RESTOREDMG = File.join(PATH_DMG, "038-2287-002.dmg")
+#FILE_RAMDISK = File.join(PATH_DMG_NEW, "038-2257-002.dmg")
+#FILE_MANIFEST_PLIST = File.join(PATH_DMG, "BuildManifest.plist")
+#
+## img3 files
+#FILE_MANIFEST = File.join(PATH_DMG, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/manifest")
+#FILE_IBEC = File.join(PATH_DMG_NEW, "Firmware/dfu/iBEC.#{DEVICE_BOARDCONFIG}.RELEASE.dfu")
+#FILE_DEVICETREE = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/DeviceTree.#{DEVICE_BOARDCONFIG}.img3")
+#FILE_LLB = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/LLB.#{DEVICE_BOARDCONFIG}.RELEASE.img3")
+#FILE_IMGDIR = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production")
 
 PATH_BASE = File.expand_path("~/tools/iOS")
-p PATH_BASE
-
 PATH_DMG = File.join(PATH_BASE, "ipsw/dmg")
-
-#
-#### iphone 3gs
-DEVICE_BOARDCONFIG = "n88ap"
 PATH_DMG_NEW = File.join(PATH_BASE, "ipsw/dmg_new")
-FILE_KERNELCACHE = File.join(PATH_DMG_NEW, "kernelcache.release.n88")
-FILE_APPLELOG = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/applelogo.s5l8920x.img3")
 
-### 4.3.5
-FILE_IPSW = File.join(PATH_BASE, "iPhone2,1_4.3.5_8L1_Restore.ipsw")
-FILE_RESTOREDMG = File.join(PATH_DMG, "038-2287-002.dmg")
-FILE_RAMDISK = File.join(PATH_DMG_NEW, "038-2257-002.dmg")
-FILE_MANIFEST_PLIST = File.join(PATH_DMG, "BuildManifest.plist")
-
-# img3 files
-FILE_MANIFEST = File.join(PATH_DMG, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/manifest")
-FILE_IBEC = File.join(PATH_DMG_NEW, "Firmware/dfu/iBEC.#{DEVICE_BOARDCONFIG}.RELEASE.dfu")
-FILE_DEVICETREE = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/DeviceTree.#{DEVICE_BOARDCONFIG}.img3")
-FILE_LLB = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production/LLB.#{DEVICE_BOARDCONFIG}.RELEASE.img3")
-FILE_IMGDIR = File.join(PATH_DMG_NEW, "Firmware/all_flash/all_flash.#{DEVICE_BOARDCONFIG}.production")
-
-def unzip_ipsw
+def unzip_ipsw(ipsw_info)
   system("mkdir -p #{PATH_DMG}")
-  system("unzip -d #{PATH_DMG} #{FILE_IPSW}")
+  system("unzip -d #{PATH_DMG} #{ipsw_info[:file_ipsw]}")
 end
 
 def firmware_info(model, ipsw)
@@ -92,27 +96,23 @@ def get_firmware_info_table
   }
 end
 
-def get_info(model, ipsw_ver)
+def get_ipsw_info(model, ipsw_ver)
   info = get_firmware_info_table
 
-  path_base = File.expand_path("~/tools/iOS")
-  path_dmg = File.join(path_base, "ipsw/dmg")
-  path_dmg_new = File.join(path_base, "ipsw/dmg_new")
-
   {
-      :file_manifest_plist => File.join(path_dmg, info[model][:file_manifest_plist]),
-      :file_manifest => File.join(path_dmg, info[model][:file_manifest]),
+      :file_manifest_plist => File.join(PATH_DMG, info[model][:file_manifest_plist]),
+      :file_manifest => File.join(PATH_DMG, info[model][:file_manifest]),
 
-      :file_imgdir => File.join(path_dmg_new, info[model][:file_imgdir]),
-      :file_kernelcache =>File.join(path_dmg_new, info[model][:file_kernelcache]),
-      :file_applelog =>File.join(path_dmg_new, info[model][:file_applelog]),
-      :file_ibec => File.join(path_dmg_new, info[model][:file_ibec]),
-      :file_devicetree => File.join(path_dmg_new, info[model][:file_devicetree]),
-      :file_llb => File.join(path_dmg_new, info[model][:file_llb]),
+      :file_imgdir => File.join(PATH_DMG_NEW, info[model][:file_imgdir]),
+      :file_kernelcache =>File.join(PATH_DMG_NEW, info[model][:file_kernelcache]),
+      :file_applelog =>File.join(PATH_DMG_NEW, info[model][:file_applelog]),
+      :file_ibec => File.join(PATH_DMG_NEW, info[model][:file_ibec]),
+      :file_devicetree => File.join(PATH_DMG_NEW, info[model][:file_devicetree]),
+      :file_llb => File.join(PATH_DMG_NEW, info[model][:file_llb]),
 
-      :file_ipsw => File.join(path_base, info[model][ipsw_ver][:file_ipsw]),
-      :file_restoredmg => File.join(path_dmg, info[model][ipsw_ver][:file_restoredmg]),
-      :file_ramdisk => File.join(path_dmg_new, info[model][ipsw_ver][:file_ramdisk]),
+      :file_ipsw => File.join(PATH_BASE, info[model][ipsw_ver][:file_ipsw]),
+      :file_restoredmg => File.join(PATH_DMG, info[model][ipsw_ver][:file_restoredmg]),
+      :file_ramdisk => File.join(PATH_DMG_NEW, info[model][ipsw_ver][:file_ramdisk]),
   }
 end
 

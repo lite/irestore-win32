@@ -122,7 +122,7 @@ end
 #define WAIT_FOR_DEVICE        33
 #define LOAD_NOR               36
 
-def do_restore
+def do_restore ipsw_info
   progress_callback = proc do |operation, progress|
     steps = {
       11 => "Waiting for storage device",
@@ -158,7 +158,8 @@ def do_restore
     
       Thread.new do
         puts "Started ASR thread" 
-        File.open(FILE_RESTOREDMG) do |f|
+        #File.open(FILE_RESTOREDMG) do |f|
+        File.open(ipsw_info[:file_restoredmg]) do |f|
           # asr = ASRService.new(12345, f)
           asr = ASRService.new(PORT_ASR)
           asr.start(f)
@@ -169,16 +170,19 @@ def do_restore
     elsif data_type == "NORData"
       puts "Got request for NOR data"
     
-      other_nor_data = File.open(FILE_MANIFEST).each_line.reject{|x| x =~ /^LLB/}.map do |line|
-        fullpath = File.join(FILE_IMGDIR, line.split("\n")[0])
+      #other_nor_data = File.open(FILE_MANIFEST).each_line.reject{|x| x =~ /^LLB/}.map do |line|
+      other_nor_data = File.open(ipsw_info[:file_manifest]).each_line.reject{|x| x =~ /^LLB/}.map do |line|
+        #fullpath = File.join(FILE_IMGDIR, line.split("\n")[0])
+        fullpath = File.join(ipsw_info[:file_imgdir], line.split("\n")[0])
         # StringIO.new(File.open(fullpath).read)
         nor_data = File.open(fullpath).read
         nor_data.blob = true 
     		nor_data
       end
 
-      llb_data = File.open(FILE_LLB).read
-      llb_data.blob = true 
+      #llb_data = File.open(FILE_LLB).read
+      llb_data = File.open(ipsw_info[:file_llb]).read
+      llb_data.blob = true
       # response = { "LlbImageData" => StringIO.new(File.open(FILE_LLB).read), "NorImageData" => other_nor_data }
       response = { "LlbImageData" => llb_data, "NorImageData" => other_nor_data }
       
@@ -187,13 +191,16 @@ def do_restore
     elsif data_type == "KernelCache"
       puts "Got request for KernelCache data"
 
-      kernel_data = File.open(FILE_KERNELCACHE).read
+      #kernel_data = File.open(FILE_KERNELCACHE).read
+      kernel_data = File.open(ipsw_info[:file_kernelcache]).read
       kernel_data.blob = true
       response = { "KernelCacheFile" => kernel_data }
       # response = { "KernelCacheFile" => StringIO.new(File.open(FILE_KERNELCACHE).read)}
       
       response
-    end    
+    elsif data_type == "RootTicket"
+      puts "Got request for RootTicket data"
+    end
   end
   
   p "reboot..."
@@ -202,5 +209,6 @@ end
 
 
 if __FILE__ == $0
-  do_restore
+  ipsw_info = get_ipsw_info("n88ap", "ios5_0")
+  do_restore ipsw_info
 end

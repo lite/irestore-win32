@@ -29,12 +29,3 @@ end
 if __FILE__ == $0
   enter_recovery
 end
-
-# 
-# irecovery -c "setenv auto-boot true"
-# irecovery -c "saveenv"
-# irecovery -c "reboot"
-# 
-# idevice_id -l | awk -F= '{print "ideviceenterrecovery " $1}' |bash
-# # idevice_id -l
-# # ideviceenterrecovery -d 39150e1823d53b7c2a8e4ff543881e762392120a 

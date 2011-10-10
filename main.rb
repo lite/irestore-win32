@@ -24,7 +24,9 @@ if __FILE__ == $0
   ecid = info["UniqueChipID"] #86872710412
   model=info["HardwareModel"] #"M68AP"
   p ecid, model
-  update_img3file(ecid) if model != "M68AP"
+  ipsw_ver = "ios5_0"
+  ipsw_info = get_ipsw_info(model, ipsw_ver)
+  update_img3file(ecid, ipsw_info) if model != "M68AP"
   enter_restore
   do_restore 
   do_activate(true)
