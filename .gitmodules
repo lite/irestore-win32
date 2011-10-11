@@ -1,6 +1,3 @@
-[submodule "syringe-irecovery"]
-	path = syringe-irecovery
-	url = git://github.com/iH8sn0w/syringe-irecovery.git
 [submodule "ribusb"]
 	path = ribusb
 	url = git://github.com/libin/ribusb.git

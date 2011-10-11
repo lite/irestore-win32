@@ -117,7 +117,11 @@ iTools
 win32_sms
 
     https://raw.github.com/gist/85729/135a0181467d2785a1d51a5a7551b7486f96c068/win32_sms.rb
-  
+
+DeviceIOView
+
+    nirsoft
+
 win32
 ----
 C:\Documents and Settings\Administrator\Application Data\Apple Computer\iTunes\iPhone Software Updates
