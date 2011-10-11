@@ -38,11 +38,12 @@ require 'rubygems'
 
 PATH_BASE = File.expand_path("~/tools/iOS")
 PATH_DMG = File.join(PATH_BASE, "ipsw/dmg")
-PATH_DMG_NEW = File.join(PATH_BASE, "ipsw/dmg_new")
+#PATH_DMG_NEW = File.join(PATH_BASE, "ipsw/dmg_new")
+PATH_DMG_NEW = PATH_DMG
 
 def unzip_ipsw(ipsw_info)
   system("mkdir -p #{PATH_DMG}")
-  system("unzip -d #{PATH_DMG} #{ipsw_info[:file_ipsw]}")
+  system("unzip -n -d #{PATH_DMG} #{ipsw_info[:file_ipsw]}")
 end
 
 def firmware_info(model, ipsw)

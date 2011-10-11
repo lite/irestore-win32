@@ -25,7 +25,7 @@ def irecovery_file(unix_path)
   run_irecovery(args)
 end
  
-def enter_restore
+def enter_restore ipsw_info
   #run_irecovery("-c reboot")
   
   run_irecovery("-c getenv build-version")
@@ -69,8 +69,4 @@ def enter_restore
   
   p "sleeping"
   sleep(10)
-end
-
-if __FILE__ == $0
-  enter_restore
 end

@@ -35,14 +35,15 @@ class Win32Device
   def initialize
     @createFile = Win32API.new('kernel32', 'CreateFile', 'PLLPLLP', 'L')
     @deviceIoControl = Win32API.new('kernel32', 'DeviceIoControl', 'LLPLPLPP', 'I')
-    @closeHandle = Win32API.new("kernel32", "CloseHandle", ["L"], 'L')
+    @closeHandle = Win32API.new("kernel32", "CloseHandle", 'L', 'L')
 
     @createEvent = Win32API.new('kernel32', 'CreateEvent', 'PLLP', 'L')
     @getOverlappedResult = Win32API.new('kernel32', 'GetOverlappedResult', 'LPPL', 'L')
     @waitForSingleObject = Win32API.new('kernel32', 'WaitForSingleObject', 'LL', 'L')
     @cancelIo = Win32API.new("kernel32", "CancelIo", 'L', 'L')
 
-    @getLastError = Win32API.new("kernel32", "GetLastError", [], "L")
+    @sleep = Win32API.new('kernel32', 'Sleep', 'L', 'L')
+    @getLastError = Win32API.new("kernel32", "GetLastError", '', "L")
 
     @setupDiGetClassDevs = Win32API.new('setupapi', 'SetupDiGetClassDevs', 'PPPL', 'L')
     @setupDiEnumDeviceInterfaces = Win32API.new('setupapi', 'SetupDiEnumDeviceInterfaces', 'LPPLP', 'B')
@@ -50,15 +51,29 @@ class Win32Device
     @setupDiDestroyDeviceInfoList = Win32API.new('setupapi', 'SetupDiDestroyDeviceInfoList', 'L', 'B')
   end
 
-  def close
-    @closeHandle.call(@h)
-    @h = nil
+  def sleep(seconds)
+    @sleep.call(seconds*1000)
   end
 
-  def open
-    path = get_iboot
-    @h = @createFile.call(path, 0xc0000000, 0x3, nil, 0x3, 0x40000000, 0)
-    #@h = @createFile.call(path, 0xc0000000, 0, nil, 0x3, 0, nil)
+  def open(path=nil)
+    path = get_iboot if path.nil?
+    puts path
+    3.times do
+      #@h = @createFile.call(path, 0xc0000000, 0, nil, 0x3, 0x40000000, 0)
+      @h = @createFile.call(path, 0xc0000000, 0, nil, 0x3, 0, nil)
+      break if @h > 0
+      puts "wait for reboot"
+      sleep(5)
+    end
+
+    set_interface(1, 0)
+    sleep(1)
+    @h
+  end
+
+  def close
+    puts "open", @h
+    @closeHandle.call(@h)
   end
 
   def get_dfu
@@ -93,38 +108,47 @@ class Win32Device
     dev_path
   end
 
-
   def send_command(cmd, request=0)
-    control_command(0x40, request, 0, 0, cmd + "\0")
+    packet = [0x40, request, 0, 0, cmd.size+1].pack('CCSSS')
+    packet += "#{cmd}\0"
+
+    control_io(cmd.size, packet)
   end
 
-  def recv_command
-    control_transfer(0xc0, 0, 0, 0, 0x400)
+  def recv_command(length=0x400)
+    packet = [0xc0, 0, 0, 0, length].pack('CCSSS')
+    packet += "\0"*length
+
+    transferred = control_io(length, packet)
+
+    packet[0, transferred]
   end
 
   def send_file(filename)
     control_transfer(0x41, 0, 0, 0, 0)
-
+    sleep(1)
     total_size = File.stat(filename).size
     packet_size = 0
     File.open(filename, 'r') do |fp|
-      while buffer = fp.read(0x2000) do
+      while buffer = fp.read(0x8000) do
         bulk_transfer(buffer)
+        ack
         packet_size += buffer.size
-        print_progress_bar(packet_size*100/total_size)
+        puts "#{packet_size}/#{total_size}"
       end
     end
-    print_progress_bar(100)
   end
 
   def reset
     bytes_transferred = [0x00].pack('L')
-    @deviceIoControl.call(@h, 0x22000C, nil, 0, nil, 0, bytes_transferred, nil);
+    @deviceIoControl.call(@h, 0x22000C, nil, 0, nil, 0, bytes_transferred, nil)
   end
 
-  def init
-    #40 00 00 00  00 00 13 00
-    control_transfer(0x40, 0, 0, 0, 0x13)
+  def ack
+    packet = [0x00].pack('L')
+    bytes_transferred = [0x00].pack('L')
+    @deviceIoControl.call(@h, 0x2200B8, packet, packet.size, packet, packet.size, bytes_transferred, nil);
+    packet.unpack('L')[0]
   end
 
   def set_config(config)
@@ -137,13 +161,6 @@ class Win32Device
     control_transfer(0x01, 0x0b, alt_setting, interface, 0)
   end
 
-  def control_command(request_type, request, value, index, in_buffer=nil)
-    packet = [request_type, request, value, index, in_buffer.size].pack('CCSSS')
-    packet += in_buffer
-
-    control_io(in_buffer.size, packet)
-  end
-
   def control_transfer(request_type, request, value, index, length)
     packet = [request_type, request, value, index, length].pack('CCSSS')
     packet += "\x00" * length if length > 0
@@ -152,55 +169,48 @@ class Win32Device
   end
 
   def control_io(length, packet)
-    control_io_overlapped(length, packet)
-    return
-    out_buffer = "\0"*length
     bytes_transferred = [0x00].pack('L')
-    @deviceIoControl.call(@h, 0x2200A0, packet, packet.size, out_buffer, out_buffer.size, bytes_transferred, nil)
-    transferred = bytes_transferred.unpack('L')[0]
-    out_buffer[0, transferred]
-  end
-
-  def control_io_overlapped(length, packet, timeout=1000)
-    out_buffer = "\0"*length
-    event = @createEvent.Call(nil, 1, 0, nil)
-    overlapped = [0, 0, 0, 0, event].pack("L*")
-    bytes_transferred = [0x00].pack('L')
-    @deviceIoControl.call(@h, 0x2200A0, packet, packet.size, out_buffer, out_buffer.size, bytes_transferred, overlapped)
-    @waitForSingleObject.call(event, timeout)
-    ret = @getOverlappedResult.Call(@h, overlapped, bytes_transferred, 0)
-    @closeHandle.call(event)
-    @cancelIo.call(@h) unless ret
-    puts "cancelIo" unless ret
-
-    transferred = bytes_transferred.unpack('L')[0]
-    out_buffer[0, transferred]
+    @deviceIoControl.call(@h, 0x2200A0, packet, packet.size, packet, packet.size, bytes_transferred, nil)
+    bytes_transferred.unpack('L')[0]
   end
 
   def bulk_transfer(packet)
+    # sig_send: wait for sig_complete event failed, signal 6, rc 258, win32 error 0
     bytes_transferred = [0x00].pack('L')
     #0x220003 #0x220195 #0x2201B6
     @deviceIoControl.call(@h, 0x2201B6, packet, packet.size, packet, packet.size, bytes_transferred, nil)
     bytes_transferred.unpack('L')[0]
   end
 
-  private
-  def print_progress_bar(progress)
-    if progress < 0
-      return
-    elsif progress > 100
-      progress = 100
-    end
-    printf "\r[";
-    (0..50).each do |i|
-      if (i < progress / 2)
-        printf "=";
-      else
-        printf " ";
-      end
-    end
-    printf "] #{progress}%%"
-    printf "\n" if progress == 100;
-  end
+  # not used
+  #def control_io_async(length, packet, timeout=1000)
+  #  event = @createEvent.Call(nil, 1, 0, nil)
+  #  overlapped = [0, 0, 0, 0, event].pack("L*")
+  #  bytes_transferred = [0x00].pack('L')
+  #  @deviceIoControl.call(@h, 0x2200A0, packet, packet.size, packet, packet.size, bytes_transferred, overlapped)
+  #  @waitForSingleObject.call(event, timeout)
+  #  ret = @getOverlappedResult.Call(@h, overlapped, bytes_transferred, 0)
+  #  @closeHandle.call(event)
+  #  puts ret
+  #  @cancelIo.call(@h) unless ret == 1
+  #  puts "cancelIo" unless ret == 1
+  #
+  #  bytes_transferred.unpack('L')[0]
+  #end
+
+  #def bulk_transfer_async(packet, timeout=1000)
+  #  event = @createEvent.Call(nil, 1, 0, nil)
+  #  overlapped = [0, 0, 0, 0, event].pack("L*")
+  #  bytes_transferred = [0x00].pack('L')
+  #  @deviceIoControl.call(@h, 0x220195, packet, packet.size, packet, packet.size, bytes_transferred, overlapped)
+  #  @waitForSingleObject.call(event, timeout)
+  #  ret = @getOverlappedResult.Call(@h, overlapped, bytes_transferred, 0)
+  #  @closeHandle.call(event)
+  #  puts ret
+  #  @cancelIo.call(@h) unless ret == 1
+  #  puts "cancelIo" unless ret == 1
+  #
+  #  bytes_transferred.unpack('L')[0]
+  #end
 
 end

@@ -22,12 +22,13 @@ if __FILE__ == $0
   info=getdeviceinfo
   enter_recovery
   ecid = info["UniqueChipID"] #86872710412
-  model=info["HardwareModel"] #"M68AP"
+  model=info["HardwareModel"].downcase #"M68AP"
   p ecid, model
   ipsw_ver = "ios5_0"
   ipsw_info = get_ipsw_info(model, ipsw_ver)
-  update_img3file(ecid, ipsw_info) if model != "M68AP"
-  enter_restore
-  do_restore 
+  unzip_ipsw ipsw_info
+  update_img3file(ecid, ipsw_info) unless model == "m68ap"
+  enter_restore ipsw_info
+  do_restore ipsw_info
   do_activate(true)
 end

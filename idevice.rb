@@ -51,24 +51,6 @@ class AppleDevice
     end
   end
   
-  def print_progress_bar(progress)
-      if progress < 0
-        return
-      elsif progress > 100
-        progress = 100
-      end 
-      printf "\r[";
-      (0..50).each do |i|
-        if(i < progress / 2) 
-          printf "=";
-        else 
-          printf " " ;
-        end
-      end
-    printf "] #{progress}%%"
-      printf "\n"  if progress == 100;
-  end
-  
   def send_file(filename, is_recovery_mode=true)
     if is_recovery_mode then
       @device.controlTransfer(:bmRequestType => 0x41, :bRequest => 0, :wValue => 0, :wIndex => 0)
@@ -81,17 +63,15 @@ class AppleDevice
     File.open(filename) do |f|
       while buffer = f.read(0x800) do
         if is_recovery_mode then
-          sent = @device.bulkTransfer(:endpoint=>4, :dataOut => buffer)
+          @device.bulkTransfer(:endpoint=>4, :dataOut => buffer)
         else
-          sent = @device.controlTransfer(:bmRequestType => 0x21, :bRequest => 1, :wValue => 0, :wIndex => 0, :dataOut => buffer);
+          @device.controlTransfer(:bmRequestType => 0x21, :bRequest => 1, :wValue => 0, :wIndex => 0, :dataOut => buffer);
         end
                 
         packet_size += buffer.size
-        print_progress_bar(packet_size*100/total_size)
+        puts "#{packet_size}/#{total_size}"
       end
     end
-    
-    print_progress_bar(100)
 
     buffer = "\x00" * 6
   end

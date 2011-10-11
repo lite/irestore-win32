@@ -15,9 +15,7 @@ require 'plist_ext'
 require 'ipsw_ext'
 
 def update_img3file(ecid, ipsw_info)
-  unzip_ipsw ipsw_info
-
-  ### tss request 
+  ### tss request
   # gc-apple-dump_03
   # tssrqst_fn = "./amai/debug/tss-request.plist"
   # payload = File.open(tssrqst_fn).read
