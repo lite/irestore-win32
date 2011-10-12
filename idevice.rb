@@ -16,7 +16,6 @@ class AppleDevice
   def open
     set_configuration(1)
     set_interface_alt_setting(0, 0)
-    self
   end
 
   def set_configuration(configuration)

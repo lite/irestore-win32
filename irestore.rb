@@ -157,7 +157,8 @@ def do_restore ipsw_info
       puts "Got request for system image data"
     
       Thread.new do
-        puts "Started ASR thread" 
+        puts "Started ASR thread"
+        puts ipsw_info
         #File.open(FILE_RESTOREDMG) do |f|
         File.open(ipsw_info[:file_restoredmg]) do |f|
           # asr = ASRService.new(12345, f)
@@ -209,6 +210,7 @@ end
 
 
 if __FILE__ == $0
-  ipsw_info = get_ipsw_info("n88ap", "ios5_0")
+  #ipsw_info = get_ipsw_info("n88ap", "ios5_0")
+  ipsw_info = get_ipsw_info("m68ap", "ios3_1_3")
   do_restore ipsw_info
 end
