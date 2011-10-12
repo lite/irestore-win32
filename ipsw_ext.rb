@@ -60,6 +60,7 @@ def get_firmware_info_table
               :file_ipsw => "iPhone2,1_5.0_9A334_Restore.ipsw",
               :file_restoredmg => "dmg/018-7873-736.dmg",
               :file_ramdisk => "018-7919-343.dmg",
+              :file_ap_ticket => "ap-ticket.dat",
           },
       }
   }
@@ -82,6 +83,7 @@ def get_ipsw_info(model, ipsw_ver)
       :file_ipsw => File.join(PATH_BASE, info[model][ipsw_ver][:file_ipsw]),
       :file_restoredmg => File.join(PATH_DMG, info[model][ipsw_ver][:file_restoredmg]),
       :file_ramdisk => File.join(PATH_DMG_NEW, info[model][ipsw_ver][:file_ramdisk]),
+      :file_ap_ticket => File.join(PATH_DMG_NEW, info[model][ipsw_ver][:file_ap_ticket]),
   }
 end
 

@@ -118,13 +118,18 @@ win32_sms
 
     https://raw.github.com/gist/85729/135a0181467d2785a1d51a5a7551b7486f96c068/win32_sms.rb
 
-DeviceIOView
+win32 tools
 
-    nirsoft
+    Nirsoft DeviceIOView
+    Fiddler
 
 win32
 ----
 C:\Documents and Settings\Administrator\Application Data\Apple Computer\iTunes\iPhone Software Updates
 
 C:\Documents and Settings\Administrator\Local Settings\Application Data\Apple\Apple Software Update
+
 C:\Documents and Settings\All Users\Application Data\Apple Computer\iTunes\iPhone Temporary Files
+
+AppleMobileDeviceSupport.msi
+C:\Documents and Settings\All Users\Application Data\Apple\Installer Cache\Apple Mobile Device Support 4.0.0.96
