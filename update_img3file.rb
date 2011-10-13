@@ -13,12 +13,7 @@ require 'plist_ext'
 require 'ipsw_ext'
 require "rexml/document"
 
-def update_img3file(ecid, ipsw_info)
-  ### tss request
-  # gc-apple-dump_03
-  # tssrqst_fn = "./amai/debug/tss-request.plist"
-  # payload = File.open(tssrqst_fn).read
-  #buffer = File.open(FILE_MANIFEST_PLIST).read
+def get_tss_payload(ecid, ipsw_info)
   buffer = File.open(ipsw_info[:file_manifest_plist]).read
   # p buffer
   obj = PropertyList.load(buffer)
@@ -26,30 +21,35 @@ def update_img3file(ecid, ipsw_info)
 
   #<key>@APTicket</key><true/>
   #<key>@BBTicket</key><true/>
-  #<key>@HostIpAddress</key><string>169.254.44.130</string>
+  #<key>@HostIpAddress</key><string>192.168.1.101</string>
   #<key>@HostPlatformInfo</key><string>windows</string>
-  #<key>@UUID</key><string>15C42527-A09E-804A-A769-B831D67FE5A7</string>
+  #<key>@UUID</key><string>38E214DF-F33E-BA44-908C-39257A02784A</string>
   #<key>@VersionInfo</key><string>libauthinstall-107.3</string>
   #<key>ApBoardID</key><integer>0</integer>
   #<key>ApChipID</key><integer>35104</integer>
   #<key>ApECID</key><integer>86872710412</integer>
-  #<key>ApNonce</key><data>ygmdEEyz2h80FIU43hHlgkG5W1E=</data>   # CA 09 9D 10 4C B3 DA 1F 34 14 85 38 DE 11 E5 82 41 B9 5B 51
+  #<key>ApNonce</key><data>mZLyYI2NFgck+ZEbycwpiazVsi8=</data>
   #<key>ApProductionMode</key><true/>
   #<key>ApSecurityDomain</key><integer>1</integer>
 
-  ap_nonce = "ygmdEEyz2h80FIU43hHlgkG5W1E=".unpack('m0')[0]
+  ap_nonce = "mZLyYI2NFgck+ZEbycwpiazVsi8=".unpack('m0')[0]
   ap_nonce.blob=true
-  # pp obj
+  unique_build_id = "pBCUKiTHORuKgsHPzeoQaCHdVnk=".unpack('m0')[0]
+  unique_build_id.blob = true
   rqst_obj = {
-      "@APTicket" => true, "@BBTicket" => true, "@HostIpAddress" => "172.16.191.1",
-      "@HostPlatformInfo" => "windows", "@UUID" => "15C42527-A09E-804A-A769-B831D67FE5A7",
+      "@APTicket" => true,
+      "@BBTicket" => true,
+      "@HostIpAddress" => "192.168.1.101",
+      "@HostPlatformInfo" => "windows",
+      "@UUID" => "E6B885AE-227D-4D46-93BF-685F701313C5",
       "@VersionInfo" => "libauthinstall-107.3",
       "ApBoardID" => 0,
-      #"ApChipID" => 35104,
+      "ApChipID" => 35104,
       "ApECID" => ecid, # 86872710412, # "UniqueChipID"=>86872710412, get from ideviceinfo.rb
       "ApNonce" => ap_nonce, # must set on iOS5
       "ApProductionMode" => true,
       "ApSecurityDomain" => 1,
+      "UniqueBuildID" => unique_build_id,
   }
 
   tmp = obj["BuildIdentities"][0]
@@ -57,8 +57,6 @@ def update_img3file(ecid, ipsw_info)
 
   tmp.each do |k, v|
     case k
-      when "ApBoardID", "ApChipID", "ApSecurityDomain"
-        rqst_obj[k] = v
       when "UniqueBuildID"
         v.blob = true
         rqst_obj[k] = v
@@ -66,7 +64,7 @@ def update_img3file(ecid, ipsw_info)
         hash = {}
         tmp["Manifest"].each do |mk, mv|
           #pp mk, mv
-          unless mk =~ /Info/
+          unless mk =~ /Info|OS|UniqueBuildID/
             hash[mk] ={}
             mv.each do |vk, vv|
               #pp vk, vv
@@ -86,16 +84,16 @@ def update_img3file(ecid, ipsw_info)
     end
   end
 
-  #pp manifest_info   
+  #pp manifest_info
 
-  # pp rqst_obj
   payload = PropertyList.dump(rqst_obj, :xml1)
-  p payload
+  return manifest_info, payload
+end
 
-  # http post 
+def get_tss_response(payload)
   uri_gs_serv = "http://gs.apple.com/TSS/controller?action=2"
   #uri_gs_serv = "http://cydia.saurik.com/TSS/controller?action=2"
-  #uri_gs_serv = "http://127.0.0.1:8080/TSS/controller?action=2" 
+  #uri_gs_serv = "http://127.0.0.1:8080/TSS/controller?action=2"
   uri = URI.parse(uri_gs_serv)
   http = Net::HTTP.new(uri.host, uri.port)
   request = Net::HTTP::Post.new(uri.request_uri)
@@ -103,47 +101,73 @@ def update_img3file(ecid, ipsw_info)
   request["Content-Length"] = payload.length
   request["Content-Type"] = 'text/xml; charset="utf-8"'
   request.body = payload
-  pp request
-  response = http.request(request)
+  http.request(request)
+end
+
+def patch_img3_files(manifest_info, obj)
+  manifest_info.each do |k, v|
+    p k
+    if obj.include?(k)
+      #pp k, v
+      filename = File.join(PATH_DMG, v)
+      img3 = Img3File.new
+      data = File.open(filename, 'r').read
+      img3.parse(StringIO.new(data))
+
+      ### change the img3 file
+      blob = obj[k]["Blob"]
+      img3.update_elements(StringIO.new(blob), blob.length)
+
+      tmp_filename = File.join(PATH_DMG_NEW, v)
+      FileUtils.mkdir_p(Pathname.new(tmp_filename).dirname)
+      f = File.open(tmp_filename, "wb")
+      f.write(img3.to_s)
+      f.close
+    end
+  end
+end
+
+def update_apticket(tssresp_filename, obj)
+  # ap_nonce
+  # 01 D5 23 60 13 D0 7E 34 31 96 4A 00 FE 4F 3F C0 7A 88 A2 6C
+
+  # 0x017 - 0x2e ap_ecid
+  # 0C 5D 04 3A 14 00 00 00
+
+  # 0x114 - 0x128
+  # 01 D5 23 60 13 D0 7E 34 31 96 4A 00 FE 4F 3F C0 7A 88 A2 6C
+
+  # 0x21e - 0x232
+  # FB AF E9 19 3A 93 5E 84 37 26 EA 19 75 97 2B CD AB 9D 9B 37
+
+  # 0x2ef - 0x36f
+  # 11 21 87 71 2A AB 5C BC 63 26 DC 9A 6C CA 89 71
+  # 70 81 5A C5 8D BF 55 A1 8C 03 3C 40 A8 8B A4 7B
+  # 60 65 30 BE 61 47 02 7C EB 36 72 F2 3C 8E EC 13
+  # 8C 27 04 DF 7D 8B 1C CF 24 FC CF 69 0D F7 7A 3D
+  # E0 83 72 E1 3E 1A 56 DB 0A 46 11 3D FA 67 ED A9
+  # E5 17 35 96 5A 9E 01 82 01 DF 73 54 37 77 72 52
+  # CF D5 FF 4F 3D 3A 02 A5 FC 8C 37 B2 56 85 1A 3B
+  # CA 33 66 7D 73 27 B8 A8 69 01 24 84 6C CF 0A 87
+
+  puts "APTicket", tssresp_filename
+  data = obj["APTicket"]
+  f = File.open(tssresp_filename, "wb+")
+  f.write(data)
+  f.close
+end
+
+def update_img3file(ecid, ipsw_info)
+  manifest_info, payload = get_tss_payload(ecid, ipsw_info)
+  response = get_tss_response(payload)
 
   if response.body.include?("STATUS=0&MESSAGE=")
-    # STATUS=0&MESSAGE=SUCCESS&REQUEST_STRING=
     buffer = response.body.split("&REQUEST_STRING=")[1]
-    # tssresp_fn = "./amai/debug/tss-response.plist"
-    # buffer = File.open(tssresp_fn).read
-    p buffer
     obj = PropertyList.load(buffer)
 
     if not obj.nil?
-      ### patch img3
-      manifest_info.each do |k, v|
-        p k
-        if obj.include?(k)
-          #pp k, v 
-          filename = File.join(PATH_DMG, v)
-          img3 = Img3File.new
-          data = File.open(filename, 'r').read
-          img3.parse(StringIO.new(data))
-
-          ### change the img3 file
-          blob = obj[k]["Blob"]
-          img3.update_elements(StringIO.new(blob), blob.length)
-
-          tmp_filename = File.join(PATH_DMG_NEW, v)
-          FileUtils.mkdir_p(Pathname.new(tmp_filename).dirname)
-          f = File.open(tmp_filename, "wb")
-          f.write(img3.to_s)
-          f.close
-        end
-      end
-
-      # ticket
-      tmp_filename = ipsw_info[:file_ap_ticket]
-      puts "APTicket", tmp_filename
-      data = obj["APTicket"]
-      f = File.open(tmp_filename, "wb+")
-      f.write(data)
-      f.close
+      patch_img3_files(manifest_info, obj)
+      update_apticket(ipsw_info[:file_ap_ticket], obj)
     end
   else
     # STATUS=94&MESSAGE=This device isn't eligible for the requested build.
@@ -153,8 +177,9 @@ def update_img3file(ecid, ipsw_info)
 end
 
 if __FILE__ == $0
-  # update_img3file(86872710412)
   ipsw_info = get_ipsw_info("n88ap", "ios5_0")
-  update_img3file(4302652613389, ipsw_info) #4302652613389
+  unzip_ipsw ipsw_info
+  #update_img3file(4302652613389, ipsw_info) #4302652613389
+  update_img3file(86872710412, ipsw_info)
 end
 

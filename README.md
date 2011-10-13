@@ -123,13 +123,26 @@ win32 tools
     Nirsoft DeviceIOView
     Fiddler
 
+log
+
+    http://pastebin.com/7CtQSvDq
+
+apticket.der
+
+    openssl asn1parse -in apticket.der -inform DER -dump > apticket.der.dump
+
+
 win32
 ----
+
+ipsw
 C:\Documents and Settings\Administrator\Application Data\Apple Computer\iTunes\iPhone Software Updates
 
-C:\Documents and Settings\Administrator\Local Settings\Application Data\Apple\Apple Software Update
-
-C:\Documents and Settings\All Users\Application Data\Apple Computer\iTunes\iPhone Temporary Files
+unzip ipsw
+C:\Documents and Settings\All Users\Application Data\Apple Computer\iTunes
 
 AppleMobileDeviceSupport.msi
-C:\Documents and Settings\All Users\Application Data\Apple\Installer Cache\Apple Mobile Device Support 4.0.0.96
+C:\Documents and Settings\All Users\Application Data\Apple\Installer Cache
+
+amai
+C:\Documents and Settings\dli\Local Settings\Temp

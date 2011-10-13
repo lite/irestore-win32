@@ -7,26 +7,6 @@ require 'rubygems'
 require 'ipsw_ext'
 require 'win32device'
 
-def send_ibec(filename)
-  dev = Win32Device.new
-  dev.open
-
-  dev.send_command("setenv auto-boot false")
-  dev.send_command("saveenv")
-
-  puts "sending iBEC"
-  puts filename
-  dev.send_file(filename)
-
-  dev.send_command("go", 0x1)
-
-  dev.reset
-  dev.close
-
-  #dev.sleep(5)
-  sleep(5)
-end
-
 def send_apple_logo(dev, filename)
   dev.send_command("setenv auto-boot false")
   dev.send_command("saveenv")
@@ -72,6 +52,32 @@ def send_ticket(dev, filename)
   dev.send_command("ticket")
 end
 
+def send_ibec(dev, filename)
+  dev.send_command("setenv auto-boot false")
+  dev.send_command("saveenv")
+
+  puts "sending iBEC"
+  puts filename
+  dev.send_file(filename)
+end
+
+def send_ticket_and_ibec(ipsw_info)
+  dev = Win32Device.new
+  dev.open
+
+  send_ticket(dev, ipsw_info[:file_ap_ticket])
+
+  send_ibec(dev, ipsw_info[:file_ibec])
+
+  dev.send_command("go", 0x1)
+
+  dev.reset
+  dev.close
+
+  #dev.sleep(5)
+  sleep(5)
+end
+
 def send_ramdisk_and_kernel(ipsw_info)
   dev = Win32Device.new
   dev.open
@@ -89,7 +95,7 @@ def send_ramdisk_and_kernel(ipsw_info)
 end
 
 def enter_restore(ipsw_info)
-  send_ibec(ipsw_info[:file_ibec])
+  send_ticket_and_ibec(ipsw_info)
   send_ramdisk_and_kernel(ipsw_info)
 end
 

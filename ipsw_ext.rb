@@ -58,9 +58,9 @@ def get_firmware_info_table
 
           "ios5_0" => {
               :file_ipsw => "iPhone2,1_5.0_9A334_Restore.ipsw",
-              :file_restoredmg => "dmg/018-7873-736.dmg",
+              :file_restoredmg => "018-7873-736.dmg",
               :file_ramdisk => "018-7919-343.dmg",
-              :file_ap_ticket => "ap-ticket.dat",
+              :file_ap_ticket => "apticket.der",
           },
       }
   }
