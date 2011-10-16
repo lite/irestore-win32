@@ -67,9 +67,6 @@ def test_ibec(filename)
 
   dev.reset
   dev.close
-
-  #dev.sleep(5)
-  sleep(5)
 end
 
 def test_enter_mode(ipsw_info)

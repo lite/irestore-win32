@@ -127,7 +127,7 @@ def patch_img3_files(manifest_info, obj)
   end
 end
 
-def update_apticket(tssresp_filename, obj)
+def update_apticket(apticket_filename, obj)
   # ap_nonce
   # 01 D5 23 60 13 D0 7E 34 31 96 4A 00 FE 4F 3F C0 7A 88 A2 6C
 
@@ -150,9 +150,9 @@ def update_apticket(tssresp_filename, obj)
   # CF D5 FF 4F 3D 3A 02 A5 FC 8C 37 B2 56 85 1A 3B
   # CA 33 66 7D 73 27 B8 A8 69 01 24 84 6C CF 0A 87
 
-  puts "APTicket", tssresp_filename
+  puts "APTicket", apticket_filename
   data = obj["APTicket"]
-  f = File.open(tssresp_filename, "wb+")
+  f = File.open(apticket_filename, "wb+")
   f.write(data)
   f.close
 end

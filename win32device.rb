@@ -56,18 +56,17 @@ class Win32Device
   end
 
   def open(path=nil)
-    path = get_iboot if path.nil?
-    puts path
-    3.times do
+    5.times do
+      sleep(3)
+      path = get_iboot if path.nil?
+      #puts path
       #@h = @createFile.call(path, 0xc0000000, 0, nil, 0x3, 0x40000000, 0)
       @h = @createFile.call(path, 0xc0000000, 0, nil, 0x3, 0, nil)
       break if @h > 0
       puts "wait for reboot"
-      sleep(5)
     end
 
     set_interface(1, 0)
-    sleep(1)
     @h
   end
 
@@ -126,7 +125,6 @@ class Win32Device
 
   def send_file(filename)
     control_transfer(0x41, 0, 0, 0, 0)
-    sleep(1)
     total_size = File.stat(filename).size
     packet_size = 0
     File.open(filename, 'r') do |fp|

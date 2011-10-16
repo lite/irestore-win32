@@ -11,7 +11,7 @@ require 'stringio'
 require 'plist_ext'
 require 'rexml/document'
 
-PORT_ASR = 0x3930
+PORT_ASR = 0x3930 # 14540
 PORT_RESTORE = 0x7ef2
 
 #   com.apple.mobile.lockdown
@@ -70,7 +70,10 @@ module DeviceSocket
 		
 		# @device_id = result['DeviceID'].to_i  
 		pp result
+    gets
+
     @device_id = result['DeviceID']
+    #@device_id = 8
 		product_id = result['Properties']['ProductID']
     serial_no = result['Properties']['SerialNumber']
 

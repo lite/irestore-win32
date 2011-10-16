@@ -14,9 +14,6 @@ class InfoService < DeviceService
     obj = {"Request" => "EnterRecovery" }
     write_plist(@socket, obj)
     p read_plist(@socket)
-
-    p "sleeping"
-    sleep(10)
   end
   
 end

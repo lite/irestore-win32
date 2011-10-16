@@ -52,6 +52,14 @@ class RestoreService < DeviceService
     puts "#{steps[operation]} (#{operation}) with progress #{progress}"
   end
 
+  def query_debug_info
+    obj = {
+        "Request" => "QueryValue",
+        "QueryKey" => "SavedDebugInfo",
+    }
+    write_plist(@socket, obj)
+  end
+
   def send_start_restore_request
 
     #<key>Request</key><string>StartRestore</string>
@@ -88,6 +96,7 @@ class RestoreService < DeviceService
 
     obj = {
         "Request" => "StartRestore",
+        "RestoreProtocolVersion" => 12,
         "RestoreOptions" => {
             "AuthInstallRestoreBehavior" => "Erase",
             "AutoBootDelay" => 0,
@@ -104,7 +113,6 @@ class RestoreService < DeviceService
             },
             "UUID" => "E6B885AE-227D-4D46-93BF-685F701313C5",
             "UpdateBaseband" => true,
-            "RestoreProtocolVersion" => 12,
         },
     }
     write_plist(@socket, obj)
@@ -151,6 +159,9 @@ class RestoreService < DeviceService
   end
 
   def start_restore(ipsw_info)
+    p "query_debug_info"
+    query_debug_info()
+
     p "starting restore"
     send_start_restore_request()
 

@@ -63,7 +63,8 @@ end
 
 def send_ticket_and_ibec(ipsw_info)
   dev = Win32Device.new
-  dev.open
+  ret = dev.open
+  return if ret < 0
 
   send_ticket(dev, ipsw_info[:file_ap_ticket])
 
@@ -73,14 +74,12 @@ def send_ticket_and_ibec(ipsw_info)
 
   dev.reset
   dev.close
-
-  #dev.sleep(5)
-  sleep(5)
 end
 
 def send_ramdisk_and_kernel(ipsw_info)
   dev = Win32Device.new
-  dev.open
+  ret = dev.open
+  return if ret < 0
 
   send_ticket(dev, ipsw_info[:file_ap_ticket])
   send_apple_logo(dev, ipsw_info[:file_applelog])
@@ -94,8 +93,14 @@ def send_ramdisk_and_kernel(ipsw_info)
   dev.close
 end
 
+def wait_for_reboot
+  p "sleeping, press enter key to continue"
+  gets
+end
+
 def enter_restore(ipsw_info)
   send_ticket_and_ibec(ipsw_info)
+  wait_for_reboot()
   send_ramdisk_and_kernel(ipsw_info)
 end
 

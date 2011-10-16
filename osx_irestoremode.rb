@@ -20,8 +20,6 @@ def send_ibec(filename)
   dev.send_command("go")
 
   dev.close
-
-  sleep(5
 end
 
 def send_kernel_cache(dev, filename)
@@ -90,7 +88,6 @@ def send_ramdisk_and_kernel(ipsw_info)
 
   dev.close()
   p "sleeping"
-  sleep(10)
 end
 
 def enter_restore(ipsw_info)

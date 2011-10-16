@@ -25,8 +25,6 @@ class AppleDevice
   def set_interface_alt_setting(interface, alt_setting)
     @device.claimInterface(interface)
     @device.setInterfaceAltSetting(interface, alt_setting)
-
-    sleep(2)
   end
   
   def send_command(command)
@@ -81,6 +79,5 @@ class AppleDevice
     rescue
       p "reboot..."
     end
-      sleep(2)
   end
 end
