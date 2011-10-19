@@ -20,7 +20,16 @@ def test_update_apticket
   update_apticket(apticket_filename, obj)
 end
 
+def test_ap_nonce
+	ap_nonce = "mZLyYI2NFgck+ZEbycwpiazVsi8=".unpack('m0')[0]
+	pp ap_nonce
+
+	# 4A 81 64 49 E2 9F 95 20 1C E3 52 7B 96 C1 91 08 7D 03 35 3C
+	# F5 0D D0 F6 49 0F 39 E8 2A 0E B7 34 A8 86 E2 A0 99 E0 0D B5
+end
+
 if __FILE__ == $0
   #test_tss_response()
-  test_update_apticket()
+  #test_update_apticket()
+  test_ap_nonce
 end

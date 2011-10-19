@@ -5,6 +5,7 @@ $: << File.dirname(__FILE__)
 
 require 'rubygems'
 require "Win32API"
+require 'pp'
 
 #static const GUID GUID_DEVINTERFACE_IBOOT = {0xED82A167L, 0xD61A, 0x4AF6, {0x9A, 0xB6, 0x11, 0xE5, 0x22, 0x36, 0xC5, 0x76}};
 #static const GUID GUID_DEVINTERFACE_DFU = {0xB8085869L, 0xFEB9, 0x404B, {0x8C, 0xB1, 0x1E, 0x5C, 0x14, 0xFA, 0x8C, 0x54}};
@@ -55,18 +56,19 @@ class Win32Device
     @sleep.call(seconds*1000)
   end
 
-  def open(path=nil)
+  def open
     5.times do
       sleep(3)
-      path = get_iboot if path.nil?
-      #puts path
-      #@h = @createFile.call(path, 0xc0000000, 0, nil, 0x3, 0x40000000, 0)
-      @h = @createFile.call(path, 0xc0000000, 0, nil, 0x3, 0, nil)
+      path = get_iboot
+      puts path
+      #@h = @createFile.call(path, 0xc0000000, 0x3, nil, 0x3, 0x40000000, 0)
+      @h = @createFile.call(path, 0xc0000000, 0x3, nil, 0x3, 0, nil)
       break if @h > 0
       puts "wait for reboot"
     end
 
     set_interface(1, 0)
+    init
     @h
   end
 
@@ -142,8 +144,21 @@ class Win32Device
     @deviceIoControl.call(@h, 0x22000C, nil, 0, nil, 0, bytes_transferred, nil)
   end
 
+  def init
+    path = get_iboot
+    puts path
+    handle = @createFile.call(path, 0xc0000000, 0x3, nil, 0x3, 0, nil)
+    packet = "\0"*0x24
+    bytes_transferred = [0x00].pack('L')
+    @deviceIoControl.call(handle, 0x002200D8, packet, packet.size, packet, packet.size, bytes_transferred, nil);
+    @closeHandle.call(handle)
+
+    packet = "\0"*18
+    @deviceIoControl.call(@h, 0x002200DC, packet, packet.size, packet, packet.size, bytes_transferred, nil);
+  end
+
   def ack
-    packet = [0x00].pack('L')
+    packet = "\0"*4
     bytes_transferred = [0x00].pack('L')
     @deviceIoControl.call(@h, 0x2200B8, packet, packet.size, packet, packet.size, bytes_transferred, nil);
     packet.unpack('L')[0]
@@ -169,6 +184,7 @@ class Win32Device
   def control_io(length, packet)
     bytes_transferred = [0x00].pack('L')
     @deviceIoControl.call(@h, 0x2200A0, packet, packet.size, packet, packet.size, bytes_transferred, nil)
+    pp "control_io", bytes_transferred
     bytes_transferred.unpack('L')[0]
   end
 

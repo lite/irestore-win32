@@ -66,15 +66,10 @@ module DeviceSocket
     p "Please unplug your device, then plug it back in"
 
     data = recv_packet(socket)[2]     
-		result = PropertyList.load(data)
+	result = PropertyList.load(data)
 		
-		# @device_id = result['DeviceID'].to_i  
-		pp result
-    gets
-
-    @device_id = result['DeviceID']
-    #@device_id = 8
-		product_id = result['Properties']['ProductID']
+	@device_id = result['DeviceID']
+    product_id = result['Properties']['ProductID']
     serial_no = result['Properties']['SerialNumber']
 
     p @device_id, product_id, serial_no 

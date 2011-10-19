@@ -48,8 +48,9 @@ def send_ticket(dev, filename)
   p "sending root ticket" #in iOS5
   puts filename
   dev.send_file(filename)
-
-  dev.send_command("ticket")
+  # 21.0  CTL    40 00 00 00  00 00 07 00                            VENDOR            196us        43.1.0
+  # 21.0  USTS   c0000004                                            stall pid         4.7ms        43.2.0
+  puts dev.send_command("ticket")
 end
 
 def send_ibec(dev, filename)
@@ -100,13 +101,14 @@ end
 
 def enter_restore(ipsw_info)
   send_ticket_and_ibec(ipsw_info)
-  wait_for_reboot()
-  send_ramdisk_and_kernel(ipsw_info)
+  #wait_for_reboot()
+  #send_ramdisk_and_kernel(ipsw_info)
 end
 
 if __FILE__ == $0
   #ipsw_info = get_ipsw_info("m68ap", "ios3_1_3")
   ipsw_info = get_ipsw_info("n88ap", "ios5_0")
   unzip_ipsw ipsw_info
+  gets
   enter_restore ipsw_info
 end

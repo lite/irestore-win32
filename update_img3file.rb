@@ -13,7 +13,7 @@ require 'plist_ext'
 require 'ipsw_ext'
 require "rexml/document"
 
-def get_tss_payload(ecid, ipsw_info)
+def get_tss_payload(dev_info, ipsw_info)
   buffer = File.open(ipsw_info[:file_manifest_plist]).read
   # p buffer
   obj = PropertyList.load(buffer)
@@ -32,10 +32,15 @@ def get_tss_payload(ecid, ipsw_info)
   #<key>ApProductionMode</key><true/>
   #<key>ApSecurityDomain</key><integer>1</integer>
 
-  ap_nonce = "mZLyYI2NFgck+ZEbycwpiazVsi8=".unpack('m0')[0]
+  #ap_nonce = "mZLyYI2NFgck+ZEbycwpiazVsi8=".unpack('m0')[0]
+  ap_nonce = "Y0rxrVEzJpYJhADmqCto+o1oCk0=".unpack('m0')[0]
+  
   ap_nonce.blob=true
   unique_build_id = "pBCUKiTHORuKgsHPzeoQaCHdVnk=".unpack('m0')[0]
   unique_build_id.blob = true
+
+  ecid = dev_info["UniqueChipID"] #86872710412
+  ap_chip_id = 35104 #info[]
   rqst_obj = {
       "@APTicket" => true,
       "@BBTicket" => true,
@@ -44,7 +49,7 @@ def get_tss_payload(ecid, ipsw_info)
       "@UUID" => "E6B885AE-227D-4D46-93BF-685F701313C5",
       "@VersionInfo" => "libauthinstall-107.3",
       "ApBoardID" => 0,
-      "ApChipID" => 35104,
+      "ApChipID" => ap_chip_id,
       "ApECID" => ecid, # 86872710412, # "UniqueChipID"=>86872710412, get from ideviceinfo.rb
       "ApNonce" => ap_nonce, # must set on iOS5
       "ApProductionMode" => true,
@@ -157,8 +162,8 @@ def update_apticket(apticket_filename, obj)
   f.close
 end
 
-def update_img3file(ecid, ipsw_info)
-  manifest_info, payload = get_tss_payload(ecid, ipsw_info)
+def update_img3file(dev_info, ipsw_info)
+  manifest_info, payload = get_tss_payload(dev_info, ipsw_info)
   response = get_tss_response(payload)
 
   if response.body.include?("STATUS=0&MESSAGE=")
@@ -179,7 +184,8 @@ end
 if __FILE__ == $0
   ipsw_info = get_ipsw_info("n88ap", "ios5_0")
   unzip_ipsw ipsw_info
+  dev_info = {"UniqueChipID"=> 86872710412}
   #update_img3file(4302652613389, ipsw_info) #4302652613389
-  update_img3file(86872710412, ipsw_info)
+  update_img3file(dev_info, ipsw_info)
 end
 

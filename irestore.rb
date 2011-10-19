@@ -160,8 +160,8 @@ class RestoreService < DeviceService
   end
 
   def start_restore(ipsw_info)
-    p "query_debug_info"
-    query_debug_info()
+    #p "query_debug_info"
+    #query_debug_info()
 
     p "starting restore"
     send_start_restore_request()
@@ -230,7 +230,7 @@ class ASRService < DeviceService
     f.seek(0)
     sent_len = 0
     total_len = f.stat.size
-    while data = f.read(packet_len) do 
+    while data = f.read(crc_chunk_size) do 
 	  if true then
 		sha1 = OpenSSL::Digest::Digest.new("SHA1").digest(data)
 		buffer = data + sha1
