@@ -131,6 +131,10 @@ apticket.der
 
     openssl asn1parse -in apticket.der -inform DER -dump > apticket.der.dump
 
+iphone-dataprotection
+
+    http://code.google.com/p/iphone-dataprotection/wiki/EncryptionKeys
+    http://code.google.com/p/iphone-dataprotection/wiki/EffaceableArea
 
 win32
 ----

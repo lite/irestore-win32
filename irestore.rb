@@ -5,6 +5,7 @@ $: << File.dirname(__FILE__)
 
 require 'rubygems'
 require 'iservice'
+require 'openssl'
 require 'ipsw_ext'
 require 'pp'
 
@@ -197,7 +198,7 @@ end
 
 class ASRService < DeviceService
 
-  def send_payload_info(size)
+  def send_payload_info(crc_chunk_size, payload_size)
     #<key>Checksum Chunk Size</key><integer>131072</integer>
     #<key>FEC Slice Stride</key><integer>40</integer>
     #<key>Packet Payload Size</key><integer>1450</integer>
@@ -209,13 +210,13 @@ class ASRService < DeviceService
     #<key>Version</key><integer>1</integer>
 
     obj ={
-        "Checksum Chunk Size" => 131072,
+        "Checksum Chunk Size" => crc_chunk_size,
         "FEC Slice Stride" => 40,
         "Packet Payload Size" => 1450,
         "Packets Per FEC" => 25,
         "Payload" => {
             "Port" => 1,
-            "Size" => size
+            "Size" => payload_size,
         },
         "Stream ID" => 1,
         "Version" => 1
@@ -224,16 +225,20 @@ class ASRService < DeviceService
     write_plist(obj)
   end
 
-  def send_payload(f)
+  def send_payload(f, crc_chunk_size)
     puts "Sending payload"
     f.seek(0)
     sent_len = 0
     total_len = f.stat.size
-    packet_len = 1450
-    while buffer = f.read(packet_len) do
-      gets
+    while data = f.read(packet_len) do 
+	  if true then
+		sha1 = OpenSSL::Digest::Digest.new("SHA1").digest(data)
+		buffer = data + sha1
+	  else
+		buffer = data
+	  end
       @socket.write(buffer)
-      sent_len += buffer.size
+      sent_len += data.size
       puts "#{sent_len}/#{total_len}"
     end
     puts "Sending payload done."
@@ -243,9 +248,10 @@ class ASRService < DeviceService
 
     p "start ASR."
     f = File.open(ipsw_info[:file_restoredmg])
-    size = f.stat.size
+    payload_size = f.stat.size
+	crc_chunk_size = 0x20000
 
-    send_payload_info(size)
+    send_payload_info(crc_chunk_size, payload_size)
 
     while plist = read_plist do
       if plist["Command"] == "OOBData"
@@ -255,7 +261,7 @@ class ASRService < DeviceService
         f.seek(oob_offset)
         @socket.write(f.read(oob_length))
       elsif plist["Command"] == "Payload"
-        send_payload(f)
+        send_payload(f, crc_chunk_size)
         break
       else
         puts "Unknown ASR command #{plist.inspect}"
