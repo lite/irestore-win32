@@ -28,6 +28,11 @@ def test_ap_nonce
 	# F5 0D D0 F6 49 0F 39 E8 2A 0E B7 34 A8 86 E2 A0 99 E0 0D B5
 end
 
+def test_hexstring_to_binary
+  hex_string = "7A2C0D05B3C9908A9F27100E04862E237FE0DA78"
+  pp hex_string_to_binary(hex_string)
+end
+
 if __FILE__ == $0
   #test_tss_response()
   #test_update_apticket()

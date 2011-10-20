@@ -50,7 +50,9 @@ def send_ticket(dev, filename)
   dev.send_file(filename)
   # 21.0  CTL    40 00 00 00  00 00 07 00                            VENDOR            196us        43.1.0
   # 21.0  USTS   c0000004                                            stall pid         4.7ms        43.2.0
-  puts dev.send_command("ticket")
+  dev.close
+  dev.open
+  dev.send_command("ticket")
 end
 
 def send_ibec(dev, filename)
@@ -67,13 +69,25 @@ def send_ticket_and_ibec(ipsw_info)
   ret = dev.open
   return if ret < 0
 
+  #dev.send_command("getenv build-version")
+  #dev.recv_command()
+  #
+  #dev.send_command("getenv build-style")
+  #dev.recv_command()
+  #
+  #dev.send_command("getenv radio-error")
+  #dev.recv_command()
+
+  dev.init
+  dev.set_interface(1, 0)
+
   send_ticket(dev, ipsw_info[:file_ap_ticket])
 
   send_ibec(dev, ipsw_info[:file_ibec])
 
   dev.send_command("go", 0x1)
 
-  dev.reset
+  #dev.reset
   dev.close
 end
 
@@ -90,7 +104,7 @@ def send_ramdisk_and_kernel(ipsw_info)
 
   dev.send_command("bootx", 0x1)
 
-  dev.reset
+  #dev.reset
   dev.close
 end
 
@@ -101,14 +115,13 @@ end
 
 def enter_restore(ipsw_info)
   send_ticket_and_ibec(ipsw_info)
-  #wait_for_reboot()
-  #send_ramdisk_and_kernel(ipsw_info)
+  wait_for_reboot()
+  send_ramdisk_and_kernel(ipsw_info)
 end
 
 if __FILE__ == $0
   #ipsw_info = get_ipsw_info("m68ap", "ios3_1_3")
   ipsw_info = get_ipsw_info("n88ap", "ios5_0")
   unzip_ipsw ipsw_info
-  gets
   enter_restore ipsw_info
 end

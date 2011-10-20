@@ -163,8 +163,8 @@ if __FILE__ == $0
   unzip_ipsw ipsw_info
   #test_sleep
   #test_return_normal_mode
-  #test_reboot
-  test_getdevpath
+  test_reboot
+  #test_getdevpath
   #test_set_interface
   #test_getenv
   #test_ibec(ipsw_info[:file_ibec])

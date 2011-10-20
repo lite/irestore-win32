@@ -11,7 +11,12 @@ require 'fileutils'
 require 'pathname'
 require 'plist_ext'
 require 'ipsw_ext'
-require "rexml/document"
+require 'rexml/document'
+require 'irecoveryinfo'
+
+def hex_string_to_binary(hex_string)
+  hex_string.scan(/.{2}/).map{ |x| x.hex.chr }.join
+end
 
 def get_tss_payload(dev_info, ipsw_info)
   buffer = File.open(ipsw_info[:file_manifest_plist]).read
@@ -32,15 +37,19 @@ def get_tss_payload(dev_info, ipsw_info)
   #<key>ApProductionMode</key><true/>
   #<key>ApSecurityDomain</key><integer>1</integer>
 
-  #ap_nonce = "mZLyYI2NFgck+ZEbycwpiazVsi8=".unpack('m0')[0]
-  ap_nonce = "Y0rxrVEzJpYJhADmqCto+o1oCk0=".unpack('m0')[0]
-  
-  ap_nonce.blob=true
-  unique_build_id = "pBCUKiTHORuKgsHPzeoQaCHdVnk=".unpack('m0')[0]
-  unique_build_id.blob = true
+  #{"CPID"=>"8920", "CPRV"=>"15", "CPFM"=>"03", "SCEP"=>"04", "BDID"=>"00",
+  #"ECID"=>"000000143A045D0C", "IBFL"=>"03", "SRNM"=>"[889437758M8]",
+  #"NONC"=>"7A2C0D05B3C9908A9F27100E04862E237FE0DA78"}
 
-  ecid = dev_info["UniqueChipID"] #86872710412
-  ap_chip_id = 35104 #info[]
+  #ecid = dev_info["UniqueChipID"] #86872710412
+  #ap_chip_id = 35104 #info[]
+  #ap_nonce = "Y0rxrVEzJpYJhADmqCto+o1oCk0=".unpack('m0')[0]
+  ap_nonce = hex_string_to_binary(dev_info["NONC"])
+  ap_nonce.blob=true
+
+  ecid = dev_info["ECID"].to_i(16)
+  ap_chip_id = dev_info["CPID"].to_i(16)
+  ap_board_id = dev_info["BDID"].to_i(16)
   rqst_obj = {
       "@APTicket" => true,
       "@BBTicket" => true,
@@ -48,13 +57,12 @@ def get_tss_payload(dev_info, ipsw_info)
       "@HostPlatformInfo" => "windows",
       "@UUID" => "E6B885AE-227D-4D46-93BF-685F701313C5",
       "@VersionInfo" => "libauthinstall-107.3",
-      "ApBoardID" => 0,
+      "ApBoardID" => ap_board_id,
       "ApChipID" => ap_chip_id,
       "ApECID" => ecid, # 86872710412, # "UniqueChipID"=>86872710412, get from ideviceinfo.rb
       "ApNonce" => ap_nonce, # must set on iOS5
       "ApProductionMode" => true,
       "ApSecurityDomain" => 1,
-      "UniqueBuildID" => unique_build_id,
   }
 
   tmp = obj["BuildIdentities"][0]
@@ -69,13 +77,13 @@ def get_tss_payload(dev_info, ipsw_info)
         hash = {}
         tmp["Manifest"].each do |mk, mv|
           #pp mk, mv
-          unless mk =~ /Info|OS|UniqueBuildID/
+          unless mk =~ /Info|OS/
             hash[mk] ={}
             mv.each do |vk, vv|
               #pp vk, vv
               case vk
-                when "Info"
-                  manifest_info = manifest_info.merge({mk => vv["Path"]})
+                #when "Info"
+                #  manifest_info = manifest_info.merge({mk => vv["Path"]})
                 when "PartialDigest", "Digest"
                   vv.blob = true
                   hash[mk] = hash[mk].merge({vk => vv})
@@ -184,7 +192,7 @@ end
 if __FILE__ == $0
   ipsw_info = get_ipsw_info("n88ap", "ios5_0")
   unzip_ipsw ipsw_info
-  dev_info = {"UniqueChipID"=> 86872710412}
+  dev_info = get_irecovery_info()
   #update_img3file(4302652613389, ipsw_info) #4302652613389
   update_img3file(dev_info, ipsw_info)
 end

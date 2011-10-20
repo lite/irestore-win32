@@ -125,6 +125,8 @@ win32 tools
 
 log
 
+    C:\Documents and Settings\dli\Application Data\Apple Computer\Logs
+    C:\Documents and Settings\dli\Application Data\Apple Computer\iTunes\iPhone Updater Logs
     http://pastebin.com/7CtQSvDq
 
 apticket.der
