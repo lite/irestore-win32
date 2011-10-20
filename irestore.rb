@@ -144,10 +144,10 @@ class RestoreService < DeviceService
     write_plist(@socket, response)
   end
 
-  def send_root_ticket(ipsw_info)
+  def send_root_ticket
     puts "Got request for RootTicket data"
 
-    root_ticket_data = File.open(ipsw_info[:file_ap_ticket]).read
+    root_ticket_data = File.open(FILE_AP_TICKET).read
     root_ticket_data.blob = true
     response = {"RootTicketData" => root_ticket_data}
     write_plist(@socket, response)
@@ -182,7 +182,7 @@ class RestoreService < DeviceService
         elsif data_type == "KernelCache"
           send_kernel_cache(ipsw_info)
         elsif data_type == "RootTicket"
-          send_root_ticket(ipsw_info)
+          send_root_ticket()
         end
       elsif plist["MsgType"] == "ProgressMsg"
         output_progress(plist["Operation"], plist["Progress"])
@@ -231,13 +231,9 @@ class ASRService < DeviceService
     sent_len = 0
     total_len = f.stat.size
     while data = f.read(crc_chunk_size) do 
-	  if true then
-		sha1 = OpenSSL::Digest::Digest.new("SHA1").digest(data)
-		buffer = data + sha1
-	  else
-		buffer = data
-	  end
-      @socket.write(buffer)
+	    sha1 = OpenSSL::Digest::Digest.new("SHA1").digest(data)
+		  buffer = data + sha1
+	    @socket.write(buffer)
       sent_len += data.size
       puts "#{sent_len}/#{total_len}"
     end

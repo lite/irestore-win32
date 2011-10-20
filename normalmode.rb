@@ -159,11 +159,11 @@ end
 
 if __FILE__ == $0
   #ipsw_info = get_ipsw_info("m68ap", "ios3_1_3")
-  ipsw_info = get_ipsw_info("n88ap", "ios5_0")
-  unzip_ipsw ipsw_info
+  #ipsw_info = get_ipsw_info("n88ap", "ios5_0")
+  #unzip_ipsw ipsw_info
   #test_sleep
-  #test_return_normal_mode
-  test_reboot
+  test_return_normal_mode
+  #test_reboot
   #test_getdevpath
   #test_set_interface
   #test_getenv

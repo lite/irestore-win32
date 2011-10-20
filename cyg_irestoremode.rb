@@ -45,6 +45,7 @@ def send_kernel_cache(dev, filename)
 end
 
 def send_ticket(dev, filename)
+  return unless IPSW_VERSION == "ios5_0"
   p "sending root ticket" #in iOS5
   puts filename
   dev.send_file(filename)
@@ -69,7 +70,7 @@ def send_ticket_and_ibec(ipsw_info)
   ret = dev.open
   return if ret < 0
 
-  send_ticket(dev, ipsw_info[:file_ap_ticket])
+  send_ticket(dev, FILE_AP_TICKET)
   send_ibec(dev, ipsw_info[:file_ibec])
   dev.send_command("go", 0x1)
 
@@ -81,7 +82,7 @@ def send_ramdisk_and_kernel(ipsw_info)
   ret = dev.open
   return if ret < 0
 
-  send_ticket(dev, ipsw_info[:file_ap_ticket])
+  send_ticket(dev, FILE_AP_TICKET)
   send_apple_logo(dev, ipsw_info[:file_applelog])
   send_ramdisk(dev, ipsw_info[:file_ramdisk])
   send_device_tree(dev, ipsw_info[:file_devicetree])
@@ -106,7 +107,7 @@ end
 
 if __FILE__ == $0
   #ipsw_info = get_ipsw_info("m68ap", "ios3_1_3")
-  ipsw_info = get_ipsw_info("n88ap", "ios5_0")
+  ipsw_info = get_ipsw_info("n88ap", IPSW_VERSION)
   unzip_ipsw ipsw_info
-  enter_restore ipsw_info
+  enter_restore(ipsw_info)
 end

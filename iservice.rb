@@ -103,7 +103,6 @@ module DeviceSocket
 
       done = result['Number'] == 0
       @tag += 1
-      sleep(1)
     end
     puts "Connected to port #{port}"
 

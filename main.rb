@@ -26,17 +26,14 @@ if __FILE__ == $0
 
   model=dev_info["HardwareModel"].downcase #"M68AP"
   p model
-  #ipsw_ver = "ios5_0"
-  ipsw_ver = "ios4_3_5"
-  #ipsw_ver = "ios3_1_3"
-  ipsw_info = get_ipsw_info(model, ipsw_ver)
+  ipsw_info = get_ipsw_info(model, IPSW_VERSION)
   unzip_ipsw ipsw_info
 
   dev_info = get_irecovery_info()
   update_img3file(dev_info, ipsw_info) unless model == "m68ap"
-  enter_restore ipsw_info
+  enter_restore(ipsw_info)
   wait_for_reboot
 
-  do_restore ipsw_info
-  do_activate(true)
+  do_restore(ipsw_info)
+  #do_activate(true)
 end

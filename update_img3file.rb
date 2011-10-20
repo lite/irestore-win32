@@ -141,28 +141,12 @@ def patch_img3_files(manifest_info, obj)
 end
 
 def update_apticket(apticket_filename, obj)
-  # ap_nonce
-  # 01 D5 23 60 13 D0 7E 34 31 96 4A 00 FE 4F 3F C0 7A 88 A2 6C
-
   # 0x017 - 0x2e ap_ecid
   # 0C 5D 04 3A 14 00 00 00
-
-  # 0x114 - 0x128
+  # 0x114 - 0x128 ap_nonce
   # 01 D5 23 60 13 D0 7E 34 31 96 4A 00 FE 4F 3F C0 7A 88 A2 6C
-
   # 0x21e - 0x232
-  # FB AF E9 19 3A 93 5E 84 37 26 EA 19 75 97 2B CD AB 9D 9B 37
-
   # 0x2ef - 0x36f
-  # 11 21 87 71 2A AB 5C BC 63 26 DC 9A 6C CA 89 71
-  # 70 81 5A C5 8D BF 55 A1 8C 03 3C 40 A8 8B A4 7B
-  # 60 65 30 BE 61 47 02 7C EB 36 72 F2 3C 8E EC 13
-  # 8C 27 04 DF 7D 8B 1C CF 24 FC CF 69 0D F7 7A 3D
-  # E0 83 72 E1 3E 1A 56 DB 0A 46 11 3D FA 67 ED A9
-  # E5 17 35 96 5A 9E 01 82 01 DF 73 54 37 77 72 52
-  # CF D5 FF 4F 3D 3A 02 A5 FC 8C 37 B2 56 85 1A 3B
-  # CA 33 66 7D 73 27 B8 A8 69 01 24 84 6C CF 0A 87
-
   puts "APTicket", apticket_filename
   data = obj["APTicket"]
   f = File.open(apticket_filename, "wb+")
@@ -180,7 +164,7 @@ def update_img3file(dev_info, ipsw_info)
 
     if not obj.nil?
       patch_img3_files(manifest_info, obj)
-      update_apticket(ipsw_info[:file_ap_ticket], obj)
+      update_apticket(FILE_AP_TICKET, obj)
     end
   else
     # STATUS=94&MESSAGE=This device isn't eligible for the requested build.
