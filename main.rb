@@ -26,7 +26,8 @@ if __FILE__ == $0
 
   model=dev_info["HardwareModel"].downcase #"M68AP"
   p model
-  ipsw_ver = "ios5_0"
+  #ipsw_ver = "ios5_0"
+  ipsw_ver = "ios4_3_5"
   #ipsw_ver = "ios3_1_3"
   ipsw_info = get_ipsw_info(model, ipsw_ver)
   unzip_ipsw ipsw_info

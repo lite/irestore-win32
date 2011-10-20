@@ -31,6 +31,7 @@ def get_firmware_info_table
           :file_ibec => "Firmware/dfu/iBEC.m68ap.RELEASE.dfu",
           :file_devicetree => "Firmware/all_flash/all_flash.m68ap.production/DeviceTree.m68ap.img3",
           :file_llb => "Firmware/all_flash/all_flash.m68ap.production/LLB.m68ap.RELEASE.img3",
+          :file_ap_ticket => "apticket.der",
 
           "ios3_1_3" => {
               :file_ipsw => "iPhone1,1_3.1.3_7E18_Restore.ipsw",
@@ -49,6 +50,7 @@ def get_firmware_info_table
           :file_ibec => "Firmware/dfu/iBEC.n88ap.RELEASE.dfu",
           :file_devicetree => "Firmware/all_flash/all_flash.n88ap.production/DeviceTree.n88ap.img3",
           :file_llb => "Firmware/all_flash/all_flash.n88ap.production/LLB.n88ap.RELEASE.img3",
+          :file_ap_ticket => "apticket.der",
 
           "ios4_3_5" => {
               :file_ipsw => "iPhone2,1_4.3.5_8L1_Restore.ipsw",
@@ -60,7 +62,6 @@ def get_firmware_info_table
               :file_ipsw => "iPhone2,1_5.0_9A334_Restore.ipsw",
               :file_restoredmg => "018-7873-736.dmg",
               :file_ramdisk => "018-7919-343.dmg",
-              :file_ap_ticket => "apticket.der",
           },
       }
   }
@@ -79,11 +80,11 @@ def get_ipsw_info(model, ipsw_ver)
       :file_ibec => File.join(PATH_DMG_NEW, info[model][:file_ibec]),
       :file_devicetree => File.join(PATH_DMG_NEW, info[model][:file_devicetree]),
       :file_llb => File.join(PATH_DMG_NEW, info[model][:file_llb]),
+      :file_ap_ticket => File.join(PATH_DMG_NEW, info[model][:file_ap_ticket]),
 
       :file_ipsw => File.join(PATH_BASE, info[model][ipsw_ver][:file_ipsw]),
       :file_restoredmg => File.join(PATH_DMG, info[model][ipsw_ver][:file_restoredmg]),
       :file_ramdisk => File.join(PATH_DMG_NEW, info[model][ipsw_ver][:file_ramdisk]),
-      :file_ap_ticket => File.join(PATH_DMG_NEW, info[model][ipsw_ver][:file_ap_ticket]),
   }
 end
 

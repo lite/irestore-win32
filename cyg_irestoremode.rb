@@ -69,25 +69,10 @@ def send_ticket_and_ibec(ipsw_info)
   ret = dev.open
   return if ret < 0
 
-  #dev.send_command("getenv build-version")
-  #dev.recv_command()
-  #
-  #dev.send_command("getenv build-style")
-  #dev.recv_command()
-  #
-  #dev.send_command("getenv radio-error")
-  #dev.recv_command()
-
-  dev.init
-  dev.set_interface(1, 0)
-
   send_ticket(dev, ipsw_info[:file_ap_ticket])
-
   send_ibec(dev, ipsw_info[:file_ibec])
-
   dev.send_command("go", 0x1)
 
-  #dev.reset
   dev.close
 end
 
