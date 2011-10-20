@@ -98,28 +98,11 @@ class RestoreService < DeviceService
     obj = {
         "Request" => "StartRestore",
         "RestoreProtocolVersion" => 12,
-        "RestoreOptions" => {
-            "AuthInstallRestoreBehavior" => "Erase",
-            "AutoBootDelay" => 0,
-            "CreateFilesystemPartitions" => true,
-            "DataImage" => false,
-            "FlashNOR" => true,
-            "RestoreBootArgs"=>"rd=md0 nand-enable-reformat=1 -progress",
-            "RootToInstall" => false,
-            "SystemImage" => true,
-            "SystemPartitionPadding" => {
-                "16" => 160,
-                "32" => 320,
-                "8" => 80,
-            },
-            "UUID" => "E6B885AE-227D-4D46-93BF-685F701313C5",
-            "UpdateBaseband" => true,
-        },
     }
     write_plist(@socket, obj)
   end
 
-  def send_nor_data(ipsw_info)
+  def send_nor_data(ipsw_info, upgrade_baseband = true)
     puts "Got request for NOR data"
 
     other_nor_data = File.open(ipsw_info[:file_manifest]).each_line.reject { |x| x =~ /^LLB/ }.map do |line|
@@ -129,10 +112,13 @@ class RestoreService < DeviceService
       nor_data
     end
 
-    llb_data = File.open(ipsw_info[:file_llb]).read
-    llb_data.blob = true
-    response = {"LlbImageData" => llb_data, "NorImageData" => other_nor_data}
-    write_plist(@socket, response)
+	response = {"NorImageData" => other_nor_data}
+    if upgrade_baseband then
+	  llb_data = File.open(ipsw_info[:file_llb]).read
+	  llb_data.blob = true
+	  response["LlbImageData"] = llb_data
+    end
+	write_plist(@socket, response)
   end
 
   def send_kernel_cache(ipsw_info)

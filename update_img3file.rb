@@ -50,6 +50,12 @@ def get_tss_payload(dev_info, ipsw_info)
   ecid = dev_info["ECID"].to_i(16)
   ap_chip_id = dev_info["CPID"].to_i(16)
   ap_board_id = dev_info["BDID"].to_i(16)
+
+  puts "ap_nonce", ap_nonce
+  puts "ecid", ecid
+  puts "ap_chip_id", ap_chip_id
+  puts "ap_board_id", ap_board_id
+
   rqst_obj = {
       "@APTicket" => true,
       "@BBTicket" => true,
@@ -82,8 +88,8 @@ def get_tss_payload(dev_info, ipsw_info)
             mv.each do |vk, vv|
               #pp vk, vv
               case vk
-                #when "Info"
-                #  manifest_info = manifest_info.merge({mk => vv["Path"]})
+                when "Info"
+                  manifest_info = manifest_info.merge({mk => vv["Path"]})
                 when "PartialDigest", "Digest"
                   vv.blob = true
                   hash[mk] = hash[mk].merge({vk => vv})
@@ -119,20 +125,19 @@ end
 
 def patch_img3_files(manifest_info, obj)
   manifest_info.each do |k, v|
-    p k
+    puts k
     if obj.include?(k)
-      #pp k, v
       filename = File.join(PATH_DMG, v)
       img3 = Img3File.new
       data = File.open(filename, 'r').read
       img3.parse(StringIO.new(data))
 
-      ### change the img3 file
       blob = obj[k]["Blob"]
       img3.update_elements(StringIO.new(blob), blob.length)
 
       tmp_filename = File.join(PATH_DMG_NEW, v)
-      FileUtils.mkdir_p(Pathname.new(tmp_filename).dirname)
+      puts "patch_img3_files", tmp_filename
+	  FileUtils.mkdir_p(Pathname.new(tmp_filename).dirname)
       f = File.open(tmp_filename, "wb")
       f.write(img3.to_s)
       f.close
@@ -147,7 +152,7 @@ def update_apticket(apticket_filename, obj)
   # 01 D5 23 60 13 D0 7E 34 31 96 4A 00 FE 4F 3F C0 7A 88 A2 6C
   # 0x21e - 0x232
   # 0x2ef - 0x36f
-  puts "APTicket", apticket_filename
+  puts "update_apticket", apticket_filename
   data = obj["APTicket"]
   f = File.open(apticket_filename, "wb+")
   f.write(data)
@@ -165,10 +170,12 @@ def update_img3file(dev_info, ipsw_info)
     if not obj.nil?
       patch_img3_files(manifest_info, obj)
       update_apticket(FILE_AP_TICKET, obj)
-    end
+    else
+	  puts "something wrong", buffer
+	end
   else
     # STATUS=94&MESSAGE=This device isn't eligible for the requested build.
-    p response.body
+    puts response.body
   end
 
 end
